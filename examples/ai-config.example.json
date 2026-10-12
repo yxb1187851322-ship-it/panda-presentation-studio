@@ -1,0 +1,7 @@
+{
+  "envFile": ".env",
+  "models": {"analysis":"gem-3.8-flash","planning":"tt-6.1-sol","revision":"gem-3.8-flash"},
+  "allowedModels": ["gem-3.8-flash","tt-6.1-sol"],
+  "maxOutputTokens": 8000,
+  "maxEstimatedCost": 2
+}

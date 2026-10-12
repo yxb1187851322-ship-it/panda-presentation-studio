@@ -4,8 +4,9 @@ const roles = { content: '项目内容', logo: '品牌 Logo', plan: '图纸 / �
 const formats = { pptx: '可编辑 PPT', web: '项目网页', images: '页面图片' };
 const extensions = new Set(['png', 'jpg', 'jpeg', 'webp', 'txt', 'md', 'docx', 'pdf', 'pptx', 'dwg', 'dxf']);
 const storagePrefix = 'panda.studio.v1.';
-const state = { token: null, project: null, projects: [], step: 'intake', selected: 0, dirty: false, busy: false, connected: false, conflict: false, exports: null };
+const state = { token: null, project: null, projects: [], step: 'intake', selected: 0, dirty: false, busy: false, connected: false, conflict: false, exports: null, aiInputsBaseline:null };
 const workflowView = {projectId:null,data:null,loading:false,error:'',request:0};
+const aiView = {status:null,error:'',loading:false};
 const workflowModes = {existing:'表达已有方案','co-create':'讨论与共创方案',layout:'只调整排版'};
 const workflowRoles = {'project-asset':'项目资产','design-case':'设计推演案例','visual-reference':'视觉参考','fixed-template':'固定模板'};
 const workflowMedia = {ppt:'PPT',web:'网页',images:'图片'};
@@ -25,6 +26,10 @@ function bodyText(body) { return Array.isArray(body) ? body.map(value => typeof 
 function currentSlide() { return state.project?.slides?.[state.selected]; }
 function isImage(asset) { return /^image\/(png|jpeg|webp)$/i.test(asset.mediaType || '') || (asset.kind === 'image' && /\.(png|jpe?g|webp)$/i.test(asset.name || '')); }
 function assetURL(asset) { return `/api/projects/${encodeURIComponent(state.project.id)}/assets/${encodeURIComponent(asset.id)}`; }
+function aiInputFingerprint(project) { return project ? JSON.stringify({title:project.title,brief:project.brief,audience:project.audience,assets:(project.assets || []).map(asset => ({id:asset.id,role:asset.role}))}) : null; }
+function needsAiAnalysis() { return !!state.project?.ai && (!!state.project.ai.analysisStale || aiInputFingerprint(state.project) !== state.aiInputsBaseline); }
+function hasAiPages() { return !!state.project?.slides?.length && (state.project.ai?.pagesMode === 'model' || (!state.project.ai?.pagesMode && state.project.ai?.runs?.some(run => ['plan','revise'].includes(run.action)))); }
+function needsAiPlan() { return hasAiPages() && (!!state.project.ai?.planStale || needsAiAnalysis()); }
 function showNotice(message, type = '') {
   $('notice').textContent = message;
   $('notice').className = 'notice' + (type ? ' ' + type : '');
@@ -58,12 +63,18 @@ function setBusy(value) {
   if (!value && state.connected) {
     $('save-project').disabled = !state.project || !state.dirty;
     $('go-deliver').disabled = !state.project?.slides?.length;
-    $('export-project').disabled = !state.project?.slides?.length;
+    $('export-project').disabled = !state.project?.slides?.length || needsAiPlan();
     $('generate-plan').disabled = state.conflict;
     $('save-project').disabled ||= state.conflict;
     $('export-project').disabled ||= state.conflict;
   }
   $('refresh-workflow').disabled = value || !state.connected || !state.project || workflowView.loading;
+  $('refresh-ai-status').disabled = value || !state.connected || aiView.loading;
+  for (const action of ['analyze','chat','plan','revise']) {
+    $('ai-' + action).disabled = value || !state.connected || !aiView.status?.configured || state.conflict
+      || (action === 'plan' && (!state.project?.ai?.analysis || needsAiAnalysis()))
+      || (action === 'revise' && (!currentSlide() || needsAiPlan() || needsAiAnalysis()));
+  }
 }
 async function operate(message, work) {
   if (state.busy || !state.connected) return;
@@ -87,6 +98,7 @@ function markDirty() {
   persistDraft();
   updateSaveState();
   renderExports();
+  renderAi();
   if (!state.busy) setBusy(false);
 }
 function updateSaveState() {
@@ -94,7 +106,8 @@ function updateSaveState() {
   $('revision-label').textContent = revision !== undefined ? `版本 ${revision} · ${state.dirty ? '有未保存修改' : '已保存'}` : '尚未编排';
   $('intake-saved').textContent = state.project ? (state.dirty ? '修改暂存在本机，生成或保存后写入项目。' : '资料已保存到本机，可关闭后继续。') : '资料与项目保存在这台电脑，不会自动上传 GitHub。';
   $('delivery-revision').textContent = revision !== undefined ? `PROJECT / V${revision}${state.dirty ? ' · 待保存' : ''}` : '尚未制作';
-  $('export-summary').textContent = state.project?.slides?.length ? `共 ${state.project.slides.length} 页。${state.dirty ? '制作前会先保存当前修改。' : '将使用当前已保存版本制作。'}` : '先完成编排，再制作文件。';
+  $('export-summary').textContent = needsAiPlan() ? '当前页面仍是旧内容，已暂停导出。请按最新资料分析重新生成页面。'
+    : state.project?.slides?.length ? `共 ${state.project.slides.length} 页。${state.dirty ? '制作前会先保存当前修改。' : '将使用当前已保存版本制作。'}` : '先完成编排，再制作文件。';
   $('footer-state').textContent = state.project ? `${state.project.title} · ${state.project.slides?.length || 0} 页 · ${state.dirty ? '待保存' : '已保存'}` : '本地资料 · 分步设计 · 可继续修改';
 }
 function adoptProject(project, { clearDraft = true } = {}) {
@@ -102,6 +115,7 @@ function adoptProject(project, { clearDraft = true } = {}) {
   state.project.assets ||= [];
   state.project.slides ||= [];
   state.project.brand ||= {};
+  state.aiInputsBaseline = aiInputFingerprint(state.project);
   state.dirty = false;
   state.conflict = false;
   state.exports = project.exports || null;
@@ -209,6 +223,94 @@ function renderSlides() {
     button.addEventListener('click', () => { state.selected = index; renderSlides(); }); $('slide-list').append(button);
   });
   renderEditor();
+  renderAiHelp();
+}
+function aiDraftKey() { return 'ai-message.' + (state.project?.id || 'new'); }
+function renderAiHelp() {
+  const slide = currentSlide();
+  $('ai-action-help').textContent = needsAiAnalysis()
+    ? '项目说明或资料已变化：请先重新分析资料，再生成页面。已有页暂时保留，局部改稿不能代替整套内容同步。'
+    : needsAiPlan() ? '分析已更新，已有页面仍是旧稿：请点击“生成页面”重新编排后再导出。局部改稿不会把整套旧页视为已同步。'
+    : slide
+    ? `局部修改对象：第 ${state.selected + 1} 页「${slide.title || '未命名页面'}」。在“设计编排”中选中别页即可切换；其他页会保留。导出使用已保存页面。`
+    : '先上传资料并填写项目说明，再分析和讨论；生成页面后可逐页调整、导出。';
+}
+async function refreshAiStatus() {
+  if (!state.connected || aiView.loading) return;
+  aiView.loading = true; aiView.error = ''; setBusy(state.busy);
+  try { aiView.status = await api('/api/ai/status'); }
+  catch (error) { aiView.error = describeError(error); }
+  finally { aiView.loading = false; renderAi(); setBusy(state.busy); }
+}
+function renderAi() {
+  const status = aiView.status;
+  $('ai-connection-status').textContent = aiView.error ? `状态读取失败：${aiView.error}`
+    : !status ? '正在读取模型配置…'
+    : status.verified ? `已记录成功模型调用${status.verifiedModels?.length ? '：'+status.verifiedModels.join('、') : ''}${status.lastSuccessAt ? ' · 最近成功 ' + new Date(status.lastSuccessAt).toLocaleString() : ''}`
+    : status.configured ? '模型已配置，尚未完成真实调用验证。'
+    : '模型尚未配置。请在本机服务端配置 API Key；浏览器不会接收密钥。';
+  $('ai-models').textContent = status?.configured
+    ? `服务：${status.provider === 'yijing' ? '一境万象' : status.provider || '已配置服务'} · 图片与内容：${status.models?.analysis || '未指定'} · 编排：${status.models?.planning || '未指定'} · 改稿：${status.models?.revision || '未指定'}。模型名称为服务平台的调用 ID。`
+    : '';
+  $('ai-message').value = readLocal(aiDraftKey()) || '';
+  renderAiHelp();
+  const container = $('ai-result'); container.replaceChildren();
+  const ai = state.project?.ai, analysis = ai?.analysis;
+  if (!analysis) { container.append(element('p','ai-empty','尚无模型分析。分析结果会在这里展示读到了什么、判断依据和需要继续确认的问题。')); return; }
+  const header = element('div','ai-analysis-header');
+  header.append(element('h3','','本项目的模型分析'),element('p','small-note','模型生成，需核对事实；不等于设计方案或版面已验收。'));
+  container.append(header);
+  if (needsAiAnalysis() || needsAiPlan()) container.append(element('p','ai-stale-warning',needsAiAnalysis()
+    ? '资料或要求已变化，以下分析需要重新进行。' + (hasAiPages() ? '现有 AI 页面尚未同步，重新分析并生成页面后才能导出。' : '请重新分析后再生成模型页面。')
+    : '本轮分析已更新，现有页面尚未同步。请重新生成页面；旧稿保留供查看，当前禁止导出。'));
+  const latestReply = Array.isArray(ai.messages) ? [...ai.messages].reverse().find(item => item.role === 'assistant') : null;
+  if (latestReply) {
+    const reply = element('p','ai-summary'); reply.append(element('strong','','本轮回应：'),document.createTextNode(latestReply.text || latestReply.content || '')); container.append(reply);
+  }
+  for (const [label,value] of [['当前理解',analysis.summary],['表达目标',analysis.goal],['面向对象',analysis.audience]]) {
+    if (!value) continue;
+    const row = element('p','ai-summary'); row.append(element('strong','',label + '：'),document.createTextNode(String(value))); container.append(row);
+  }
+  const names = new Map((state.project.assets || []).map(asset => [asset.id,asset.name]));
+  const sourceName = id => id === 'user:brief' ? '项目说明' : id === 'user:message' ? '本轮用户补充'
+    : /^user:history:/.test(String(id)) ? '已保存的用户补充' : /^dialogue:/.test(String(id)) ? '底稿中的用户对话'
+    : names.get(String(id).replace(/^asset:/,'')) || String(id);
+  const listSection = (heading,items,describe) => {
+    if (!Array.isArray(items) || !items.length) return;
+    const section = element('details','ai-analysis-section'); section.append(element('summary','',`${heading} · ${items.length}`));
+    const list = element('ul');
+    for (const item of items) list.append(element('li','',describe(item)));
+    section.append(list); container.append(section); return section;
+  };
+  listSection('资料中的事实',analysis.facts,item => `${item.text || ''}${item.sourceIds?.length ? '｜依据：' + item.sourceIds.map(sourceName).join('、') : ''}`);
+  listSection('逐项观察',analysis.observations,item => `${sourceName(item.assetId)}：${item.text || ''}`);
+  listSection('设计推演与建议',analysis.designReasoning,item => `${({existing:'资料已有',interpretation:'解读',proposed:'建议'})[item.status] || '待确认'}｜需求：${item.need || ''}\n回应：${item.response || ''}${item.evidenceIds?.length ? '\n依据：' + item.evidenceIds.map(sourceName).join('、') : ''}`);
+  const questions = listSection('需要继续确认',analysis.questions,item => String(item)); if (questions) questions.open = true;
+  listSection('本轮限制',[...new Set([...(analysis.warnings || []),...(ai.warnings || [])])],item => String(item));
+  listSection('明确的表达偏好',analysis.preferences,item => String(item));
+  const messages = Array.isArray(ai.messages) ? ai.messages : [];
+  const conversation = listSection('讨论记录',messages,item => `${item.role === 'user' ? '你' : 'Panda'}：${item.text || item.content || ''}`);
+  if (conversation && messages.length < 5) conversation.open = true;
+  const methodNames = {'SKILL.md':'Panda 内容编排总流程','content-and-dialogue.md':'意图理解与多轮讨论','intake.md':'资料读取与用途辨别','case-reasoning.md':'案例的设计推演','design-review.md':'内容与设计审阅','ppt.md':'PPT 表达与制作','brand-and-template.md':'品牌与固定模板约束'};
+  listSection('本轮加载的方法',ai.skillEvidence,item => {const name = String(item.path || '').split(/[\\/]/).pop();return methodNames[name] || name || '专业方法';});
+  if (ai.reading) {
+    const reading = element('details','ai-analysis-section'); reading.append(element('summary','','实际读取范围'));
+    const list = element('ul');
+    if (typeof ai.reading === 'string') list.append(element('li','',ai.reading));
+    else {
+      for (const item of ai.reading.images || []) list.append(element('li','',`${sourceName(item.assetId)}：已发送 ${item.width} × ${item.height} 图片预览${(ai.reading.observedAssetIds || []).includes(item.assetId) ? '，已有观察记录' : '；未单独记录观察'}。`));
+      for (const item of ai.reading.documents || []) list.append(element('li','',`${sourceName(item.assetId)}：发送已提取文字 ${item.characters} 字符${item.complete ? '，本次包含全部已提取文本' : '，只发送了部分已提取文本'}。这不表示已阅读原稿每页画面。`));
+      for (const item of ai.reading.omitted || []) list.append(element('li','',`${sourceName(item.assetId)}：${item.reason}`));
+    }
+    reading.append(list); container.append(reading);
+  }
+  const runs = Array.isArray(ai.runs) ? ai.runs : [];
+  if (runs.length) {
+    const known = runs.filter(run => typeof run.cost === 'number' && Number.isFinite(run.cost));
+    const total = known.reduce((sum,run) => sum+run.cost,0), unknown = runs.length-known.length;
+    container.append(element('p','ai-cost',`本项目保留 ${runs.length} 次模型记录${known.length ? `，已知实扣合计 ${total.toFixed(4)} ${known[0].costUnit || '算力'}` : '，暂未取得实际扣费数据'}${unknown ? `；${unknown} 次实扣未知` : ''}。`));
+    listSection('模型调用记录',runs,run => `${({analyze:'资料分析',chat:'补充要求',plan:'生成页面',revise:'局部改稿'})[run.action] || run.action}｜${run.model || '模型未记录'}｜${typeof run.cost === 'number' && Number.isFinite(run.cost) ? `实扣 ${run.cost} ${run.costUnit || '算力'}` : '实扣未知'}${run.at ? '｜'+new Date(run.at).toLocaleString() : ''}`);
+  }
 }
 function renderEditor() {
   const slide = currentSlide();
@@ -413,7 +515,7 @@ function renderAll() {
   const values = state.project || readLocal('intake') || {};
   $('project-title').value = values.title === '未命名项目' ? '' : values.title || '';
   $('project-brief').value = values.brief || ''; $('project-audience').value = values.audience || '';
-  renderAssets(); renderSlides(); updateSaveState(); renderExports(); renderLimitations(); renderWorkflow(); changeStep(state.step); setBusy(state.busy);
+  renderAssets(); renderSlides(); updateSaveState(); renderExports(); renderLimitations(); renderWorkflow(); renderAi(); changeStep(state.step); setBusy(state.busy);
 }
 function openImage(url, name) { $('full-image').src = url; $('full-image').alt = name; $('full-image-label').textContent = name; $('image-dialog').showModal(); }
 function fileBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(',')[1]); reader.onerror = () => reject(new Error(`无法读取文件：${file.name}`)); reader.readAsDataURL(file); }); }
@@ -440,6 +542,27 @@ async function uploadFiles(fileList) {
 }
 
 document.querySelectorAll('[data-step]').forEach(button => button.addEventListener('click', () => { if (!state.busy) changeStep(button.dataset.step); }));
+$('ai-message').addEventListener('input', () => writeLocal(aiDraftKey(),$('ai-message').value));
+$('refresh-ai-status').addEventListener('click', () => { if (!state.busy) void refreshAiStatus(); });
+for (const [action,label] of [['analyze','分析资料'],['chat','理解补充要求'],['plan','编排页面'],['revise','修改当前页面']]) {
+  $('ai-' + action).addEventListener('click', () => operate(`Panda 正在${label}，请稍候…`,async () => {
+    const message = $('ai-message').value.trim(), oldDraftKey = aiDraftKey(), slideId = currentSlide()?.id;
+    if (['chat','revise'].includes(action) && !message) throw new Error('请先填写补充要求或修改意见。');
+    if (action === 'revise' && !slideId) throw new Error('请先在“设计编排”中选择要修改的页面。');
+    await ensureProject();
+    if (message) writeLocal(aiDraftKey(),message);
+    await saveProject();
+    try {
+      const project = await api(`/api/projects/${encodeURIComponent(state.project.id)}/ai`,{method:'POST',body:{action,message,slideId:action === 'revise' ? slideId : undefined,expectedRevision:state.project.revision}});
+      clearLocal(oldDraftKey); clearLocal(aiDraftKey());
+      adoptProject(project);
+      if (['plan','revise'].includes(action)) changeStep('compose');
+      showNotice(action === 'plan' ? `模型已生成 ${project.slides.length} 页。请检查内容和图片，再到“制作交付”导出实际文件。`
+        : action === 'revise' ? '已按要求修改当前页，其他页保留。请检查改稿后重新导出。'
+        : '模型分析已保存。请查看依据与待确认问题，继续补充要求或生成页面。');
+    } finally { await refreshAiStatus(); }
+  }));
+}
 $('file-input').addEventListener('change', event => uploadFiles(event.target.files));
 $('drop-zone').addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && !state.busy && state.connected) { event.preventDefault(); $('file-input').click(); } });
 $('drop-zone').addEventListener('click', event => { if (state.busy || !state.connected) event.preventDefault(); });
@@ -508,6 +631,7 @@ async function initialize() {
   setBusy(true); renderAll();
   try {
     const session = await api('/api/session'); state.token = session.token; state.connected = true;
+    await refreshAiStatus();
     const result = await api('/api/projects'); state.projects = result.projects || [];
     $('connection').textContent = '本地服务已连接'; $('connection').classList.add('ready');
     const lastId = readLocal('lastProject');

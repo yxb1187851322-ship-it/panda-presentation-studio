@@ -8,6 +8,7 @@ import { createStudio } from '../src/server/studio-server.mjs';
 async function harness(t) {
   const dataDir=await fs.mkdtemp(path.join(os.tmpdir(),'panda-server-'));
   const app=await createStudio({port:0,dataDir,
+    aiGateway:{getStatus:() => ({configured:false,verified:false})},aiRunner:async () => {throw new Error('No model calls in server tests');},
     importAsset:async ({projectDir,name,buffer,role})=>{await fs.mkdir(path.join(projectDir,'assets'),{recursive:true});await fs.writeFile(path.join(projectDir,'assets','asset.png'),buffer);return{id:'asset-1',name,kind:'image',file:'assets/asset.png',mediaType:'image/png',role};},
     createPlan:p=>({slides:[{id:'page-1',kind:'hero',title:p.title,body:'',assetIds:p.assets.map(a=>a.id)}],limitations:[]}),
     renderProject:async ({outputDir})=>{await fs.writeFile(path.join(outputDir,'deck.html'),'<!doctype html><title>local</title>');return{files:[{name:'deck.html',format:'web'}],slides:[],warnings:[]};}

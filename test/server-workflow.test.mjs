@@ -10,6 +10,7 @@ async function harness(t) {
   let app, session, intakeId = 0, planCalls = 0, renderCalls = 0;
   const options = {
     port:0, dataDir,
+    aiGateway:{getStatus:() => ({configured:false,verified:false})},aiRunner:async () => {throw new Error('No model calls in workflow tests');},
     importAsset:async ({projectDir,name,buffer,role}) => {
       const id = `asset-${++intakeId}`, file = `assets/${id}.png`;
       await fs.mkdir(path.join(projectDir,'assets'), {recursive:true});

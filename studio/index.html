@@ -32,10 +32,21 @@
     <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
     <div id="conflict-actions" class="conflict-actions" hidden><button id="download-draft" class="button quiet" type="button">下载修改备份</button><button id="reload-project" class="button" type="button">重新载入已保存版本</button></div>
 
+    <section class="ai-panel" aria-labelledby="ai-heading">
+      <div class="ai-heading"><div><p class="eyebrow">UNDERSTAND · DISCUSS · MAKE</p><h2 id="ai-heading">与 Panda 讨论内容</h2></div><button id="refresh-ai-status" class="button quiet" type="button">刷新连接状态</button></div>
+      <p id="ai-connection-status" class="ai-connection-status" role="status" aria-live="polite">正在读取模型配置…</p>
+      <p id="ai-models" class="small-note"></p>
+      <p class="ai-disclosure">点击下面的模型操作，会把当前项目说明、可读取的文档内容和用于分析的图片发送到已配置的模型服务，并产生 API 调用费用。原始文件仍保存在本机。</p>
+      <label class="field"><span>补充要求或修改意见</span><textarea id="ai-message" rows="3" maxlength="8000" placeholder="例如：先说明一家人的生活需求，再解释客厅、卧室与长辈短住的关系。哪些内容没有依据，请先问我。"></textarea></label>
+      <div class="ai-actions"><button id="ai-analyze" class="button" type="button">1 · 分析资料</button><button id="ai-chat" class="button" type="button">2 · 补充要求</button><button id="ai-plan" class="button primary" type="button">3 · 生成页面</button><button id="ai-revise" class="button" type="button">只修改当前页</button></div>
+      <p id="ai-action-help" class="small-note">先上传资料并填写项目说明，再分析和讨论；生成页面后可逐页调整、导出。</p>
+      <div id="ai-result" class="ai-result"></div>
+    </section>
+
     <details id="workflow-panel" class="workflow-panel">
       <summary><strong>内容底稿</strong><span id="workflow-summary">查看分析依据与待补内容</span><span class="workflow-chevron" aria-hidden="true">＋</span></summary>
       <div class="workflow-body">
-        <div class="workflow-toolbar"><p>查看助手已保存的分析与引用关系。生成编排与导出仍使用现有页面，不会自动采用这份底稿。</p><button id="refresh-workflow" class="button quiet" type="button">刷新底稿</button></div>
+        <div class="workflow-toolbar"><p>这里是历史助手保存的分析底稿。上方模型分析单独保存，目前没有自动合并两份分析；导出使用当前已保存页面。</p><button id="refresh-workflow" class="button quiet" type="button">刷新底稿</button></div>
         <p id="workflow-status" class="workflow-status" role="status" aria-live="polite"></p>
         <div id="workflow-content"></div>
       </div>
@@ -57,15 +68,15 @@
             <div class="upload-options"><label for="upload-role">本次上传作为</label><select id="upload-role"><option value="content">项目内容</option><option value="logo">品牌 Logo</option><option value="plan">图纸 / 平面</option><option value="reference">版面参考</option></select><span>上传后可调整用途</span></div>
             <div id="asset-list" class="asset-list"></div>
             <div id="empty-assets" class="empty-assets"><span class="empty-mark" aria-hidden="true">↗</span><p>先放入你已有的素材。<br>一张图片、一份说明，都可以开始。</p></div>
-            <p class="small-note">图片的空间含义与设计判断需由你或助手补充。PDF、PPTX、CAD 的可读范围以资料状态为准；参考图不会自动作为客户项目素材。</p>
+            <p class="small-note">模型可以分析可用图片和已提取文字；PDF、PPTX、CAD 的实际可读范围以资料状态与分析记录为准。参考图不会自动作为客户项目素材。</p>
           </section>
           <section class="brief-panel" aria-labelledby="brief-heading">
             <div class="panel-title"><h2 id="brief-heading">这次，想讲清楚什么？</h2><span class="tag">项目说明</span></div>
             <label class="field"><span>项目标题</span><input id="project-title" maxlength="100" placeholder="例如：湖畔会所 · 设计方案"></label>
             <label class="field"><span>用途与内容</span><textarea id="project-brief" rows="7" maxlength="12000" placeholder="例如：给客户讲解方案。先展示整体氛围，再说明动线与材料。保留完整平面，不推测面积和尺寸。"></textarea></label>
             <label class="field"><span>给谁看 <small>选填</small></span><input id="project-audience" maxlength="200" placeholder="客户、设计团队，或项目决策人"></label>
-            <div class="process-note"><span aria-hidden="true">↳</span><p>当前按文本、图片比例与素材用途组织初稿。<br>尚未接入大模型；你可以逐页调整内容和版式。</p></div>
-            <button id="generate-plan" class="button primary wide" type="button"><span>生成编排初稿</span><span aria-hidden="true">→</span></button>
+            <div class="process-note"><span aria-hidden="true">↳</span><p>要理解资料、讨论内容，请使用上方模型操作。<br>下方保留按文本、图片比例与用途编排的本地规则功能。</p></div>
+            <button id="generate-plan" class="button wide" type="button"><span>按规则快速编排</span><span aria-hidden="true">→</span></button>
             <p id="intake-saved" class="save-caption">资料与项目保存在这台电脑，不会自动上传 GitHub。</p>
           </section>
         </div>
@@ -109,7 +120,7 @@
             <div class="export-controls"><p id="export-summary">先完成编排，再制作文件。</p><button id="export-project" class="button primary" type="button">开始制作 <span aria-hidden="true">↗</span></button></div>
             <section id="export-results" class="export-results" aria-labelledby="results-heading" hidden><div class="panel-title"><h2 id="results-heading">已生成的文件</h2><span id="export-version" class="tag"></span></div><div id="export-files" class="export-files"></div><div id="rendered-pages" class="rendered-pages"></div></section>
           </section>
-          <aside class="delivery-notes"><p class="eyebrow">BEFORE YOU SHARE</p><h2>完成制作之后<br>再看一遍。</h2><ol><li><span>01</span><p><strong>核对内容</strong>名称、参数与判断都有依据。</p></li><li><span>02</span><p><strong>检查版面</strong>标题完整、图纸清楚、主体未被裁切。</p></li><li><span>03</span><p><strong>确认品牌</strong>Logo、配色与客户要求一致。</p></li></ol><p class="small-note">这是独立本地试制版，尚未接入 Panda 正式客户端或模型网关。</p></aside>
+          <aside class="delivery-notes"><p class="eyebrow">BEFORE YOU SHARE</p><h2>完成制作之后<br>再看一遍。</h2><ol><li><span>01</span><p><strong>核对内容</strong>名称、参数与判断都有依据。</p></li><li><span>02</span><p><strong>检查版面</strong>标题完整、图纸清楚、主体未被裁切。</p></li><li><span>03</span><p><strong>确认品牌</strong>Logo、配色与客户要求一致。</p></li></ol><p class="small-note">这是独立本地试制版。模型输出与自动检查都不能代替实际版面审阅和用户确认。</p></aside>
         </div>
       </section>
     </main>
