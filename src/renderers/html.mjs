@@ -1,0 +1,20 @@
+const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+
+export function renderHtml(project, layouts, images) {
+  const sections = layouts.map((layout, index) => {
+    const source = project.slides[index];
+    const photoElements = layout.elements.filter(element => element.type === 'image' && element.assetId !== project.brand?.logoAssetId);
+    const logo = images.get(project.brand?.logoAssetId);
+    const imageMarkup = photoElements.map(element => {
+      const asset = images.get(element.assetId);
+      return `<figure><img src="data:${asset.mediaType};base64,${asset.bytes.toString('base64')}" alt="${esc(element.alt)}" loading="lazy" style="object-fit:${element.fit}"></figure>`;
+    }).join('');
+    const body = Array.isArray(source.body) ? source.body.join('\n') : source.body;
+    return `<section class="page ${esc(layout.kind)}" aria-labelledby="heading-${index}"><div class="copy"><p class="page-number">${String(index + 1).padStart(2, '0')}</p><h${index === 0 ? '1' : '2'} id="heading-${index}">${esc(source.title || project.title)}</h${index === 0 ? '1' : '2'}>${body ? `<p class="body">${esc(body)}</p>` : ''}</div>${imageMarkup ? `<div class="visual count-${photoElements.length}">${imageMarkup}</div>` : ''}${source.caption ? `<p class="caption">${esc(source.caption)}</p>` : ''}${logo ? `<img class="logo" src="data:${logo.mediaType};base64,${logo.bytes.toString('base64')}" alt="品牌标识">` : ''}</section>`;
+  }).join('\n');
+  const font = String(project.brand?.fontFamily || 'Microsoft YaHei').replace(/[^\p{L}\p{N} _-]/gu, '');
+  const accent = /^#[0-9a-f]{6}$/i.test(project.brand?.accent ?? '') ? project.brand.accent : '#53695D';
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>${esc(project.title)}</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#F5F4F0;color:#28332E;font-family:'${font}',sans-serif}main{max-width:1600px;margin:auto}.page{position:relative;min-height:740px;padding:80px 6% 100px;border-bottom:1px solid #dadcd5;display:grid;grid-template-columns:1fr;gap:38px}.copy{max-width:1040px}h1,h2{white-space:pre-line;margin:0;font-weight:400;letter-spacing:-.025em;line-height:1.3;overflow-wrap:anywhere}h1{font-size:clamp(36px,4.8vw,64px)}h2{font-size:clamp(30px,3.5vw,46px)}.page-number{font-size:14px;color:${accent};margin:0 0 22px}.body{font-size:clamp(18px,1.8vw,25px);line-height:1.8;color:#606A64;white-space:pre-wrap;overflow-wrap:anywhere;margin:26px 0 0}.visual{display:grid;gap:28px;min-width:0}.count-2{grid-template-columns:repeat(2,minmax(0,1fr))}.count-3{grid-template-columns:repeat(3,minmax(0,1fr))}figure{margin:0;min-width:0}figure img{display:block;width:100%;max-height:640px;aspect-ratio:16/10;object-fit:contain}.cover,.split,.plan{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:center;gap:5%}.cover .copy,.split .copy{max-width:520px}.plan{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}.plan img{object-fit:contain!important}.caption{color:#606A64;font-size:16px;line-height:1.6;grid-column:1/-1;white-space:pre-wrap;margin:0}.logo{position:absolute;left:6%;bottom:32px;width:132px;height:30px;object-fit:contain;object-position:left center}.text{align-content:center}.text .copy{max-width:1000px}.text .body{max-width:920px}@media(max-width:740px){.page{min-height:0;padding:48px 7% 84px;gap:26px;grid-template-columns:1fr}.cover,.split,.plan{grid-template-columns:1fr}.count-2,.count-3{grid-template-columns:1fr}.visual img{max-height:none;aspect-ratio:auto;object-fit:contain}.logo{left:7%;bottom:28px;width:110px}.caption{font-size:15px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@media print{.page{break-after:page;min-height:0;border:0}}
+</style></head><body><main>${sections}</main></body></html>`;
+}

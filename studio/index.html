@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Panda 本地内容编排工作台。从项目素材到可编辑演示、网页与图片。">
+  <title>Panda · 内容编排工作台</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="./" aria-label="Panda 工作台首页">PANDA<span class="wordmark-dot"></span></a>
+    <div class="product-title"><strong>内容编排</strong><span>本地试制工作台</span></div>
+    <div class="topbar-actions">
+      <span id="connection" class="connection">正在连接本地服务</span>
+      <label class="project-picker-label"><span class="sr-only">切换已有项目</span><select id="project-picker" aria-label="切换已有项目"><option value="">选择项目</option></select></label>
+      <button id="new-project" class="button quiet" type="button">新项目 <span aria-hidden="true">＋</span></button>
+    </div>
+  </header>
+
+  <div class="page-shell">
+    <nav class="steps" aria-label="编排流程">
+      <button type="button" data-step="intake" class="step active" aria-current="step"><span class="step-number">01</span><span>整理资料</span><span class="step-hint">上传与说明</span></button>
+      <span class="step-line" aria-hidden="true"></span>
+      <button type="button" data-step="compose" class="step"><span class="step-number">02</span><span>设计编排</span><span class="step-hint">逐页推敲</span></button>
+      <span class="step-line" aria-hidden="true"></span>
+      <button type="button" data-step="deliver" class="step"><span class="step-number">03</span><span>制作交付</span><span class="step-hint">选择输出</span></button>
+    </nav>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <div id="conflict-actions" class="conflict-actions" hidden><button id="download-draft" class="button quiet" type="button">下载修改备份</button><button id="reload-project" class="button" type="button">重新载入已保存版本</button></div>
+
+    <main>
+      <section id="intake-panel" class="step-panel" aria-labelledby="intake-heading">
+        <div class="section-heading"><div><p class="eyebrow">FROM MATERIAL TO STORY</p><h1 id="intake-heading">好的编排，<span>从理解资料开始。</span></h1><p class="section-description">把项目图片与说明放在一起。先说清楚想表达什么，再决定每一页怎么呈现。</p></div><span class="edition">WORKSPACE / 01</span></div>
+        <div class="intake-grid">
+          <section class="material-panel" aria-labelledby="material-heading">
+            <div class="panel-title"><h2 id="material-heading">项目资料</h2><span id="asset-count" class="tag">0 份资料</span></div>
+            <label id="drop-zone" class="drop-zone" for="file-input" tabindex="0" role="button" aria-label="选择或拖入项目资料">
+              <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true"><path d="M8 23v8h22v-8M19 25V7m-7 7 7-7 7 7" stroke="currentColor" stroke-width="1.3"/></svg>
+              <strong>拖入资料，或点击选择</strong>
+              <span>图片、TXT、Markdown、DOCX、PDF、PPTX、DWG、DXF</span>
+              <small>文件保存在本机。CAD 仅登记，不会自动还原图纸。</small>
+            </label>
+            <input id="file-input" class="sr-only" type="file" multiple accept=".png,.jpg,.jpeg,.webp,.txt,.md,.docx,.pdf,.pptx,.dwg,.dxf">
+            <div class="upload-options"><label for="upload-role">本次上传作为</label><select id="upload-role"><option value="content">项目内容</option><option value="logo">品牌 Logo</option><option value="plan">图纸 / 平面</option><option value="reference">版面参考</option></select><span>上传后可调整用途</span></div>
+            <div id="asset-list" class="asset-list"></div>
+            <div id="empty-assets" class="empty-assets"><span class="empty-mark" aria-hidden="true">↗</span><p>先放入你已有的素材。<br>一张图片、一份说明，都可以开始。</p></div>
+            <p class="small-note">图片的空间含义与设计判断需由你或助手补充。PDF、PPTX、CAD 的可读范围以资料状态为准；参考图不会自动作为客户项目素材。</p>
+          </section>
+          <section class="brief-panel" aria-labelledby="brief-heading">
+            <div class="panel-title"><h2 id="brief-heading">这次，想讲清楚什么？</h2><span class="tag">项目说明</span></div>
+            <label class="field"><span>项目标题</span><input id="project-title" maxlength="100" placeholder="例如：湖畔会所 · 设计方案"></label>
+            <label class="field"><span>用途与内容</span><textarea id="project-brief" rows="7" maxlength="12000" placeholder="例如：给客户讲解方案。先展示整体氛围，再说明动线与材料。保留完整平面，不推测面积和尺寸。"></textarea></label>
+            <label class="field"><span>给谁看 <small>选填</small></span><input id="project-audience" maxlength="200" placeholder="客户、设计团队，或项目决策人"></label>
+            <div class="process-note"><span aria-hidden="true">↳</span><p>当前按文本、图片比例与素材用途组织初稿。<br>尚未接入大模型；你可以逐页调整内容和版式。</p></div>
+            <button id="generate-plan" class="button primary wide" type="button"><span>生成编排初稿</span><span aria-hidden="true">→</span></button>
+            <p id="intake-saved" class="save-caption">资料与项目保存在这台电脑，不会自动上传 GitHub。</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="compose-panel" class="step-panel" aria-labelledby="compose-heading" hidden>
+        <div class="section-heading compact"><div><p class="eyebrow">DESIGN EACH PAGE</p><h1 id="compose-heading">让每一页，<span>都有表达的理由。</span></h1></div><div class="heading-actions"><span id="revision-label" class="save-state">尚未编排</span><button id="save-project" class="button" type="button">保存修改</button><button id="go-deliver" class="button primary" type="button">制作交付 <span aria-hidden="true">→</span></button></div></div>
+        <div id="empty-plan" class="empty-state"><span class="empty-mark">02</span><h2>还没有编排页面</h2><p>上传资料、写下用途，生成初稿后在这里逐页调整。</p><button class="button primary" type="button" data-step="intake">回到资料</button></div>
+        <div id="editor-workspace" class="editor-workspace" hidden>
+          <aside class="page-rail" aria-label="页面列表"><div class="rail-heading"><h2>叙事顺序</h2><span id="slide-count"></span></div><div id="slide-list" class="slide-list"></div></aside>
+          <div class="design-workspace">
+            <div class="canvas-heading"><span id="page-label">页面预览</span><span>16:9 · 内容草图</span></div>
+            <div id="preview-wrap" class="preview-wrap"><div id="slide-preview" class="slide-preview"></div></div>
+            <div id="page-reason" class="page-reason"></div>
+            <div class="editor-fields">
+              <div class="editor-row"><label class="field"><span>这一页的标题</span><input id="slide-title" maxlength="100"></label><label class="field layout-field"><span>版式</span><select id="slide-kind"><option value="cover">开场 / 封面</option><option value="hero">主视觉</option><option value="split">图文并置</option><option value="gallery">图片组</option><option value="text">文字叙述</option><option value="plan">图纸说明</option></select></label></div>
+              <label class="field"><span>正文 <small>用真实资料说话，不补造参数 · 最多 1200 字</small></span><textarea id="slide-body" rows="4" maxlength="1200"></textarea></label>
+              <label class="field"><span>图片说明 <small>选填</small></span><input id="slide-caption" maxlength="240"></label>
+              <fieldset class="image-choice-field"><legend>本页图片 <small id="image-choice-note">点击选择；Logo 在右侧统一设置</small></legend><div id="slide-images" class="slide-images"></div></fieldset>
+            </div>
+          </div>
+          <aside class="project-settings" aria-label="项目设置">
+            <p class="eyebrow">PROJECT IDENTITY</p><h2>延续项目品牌</h2><p class="small-note">只使用你提供的标识。<br>客户成品不会自动加 Panda Logo。</p>
+            <label class="field"><span>品牌 Logo</span><select id="brand-logo"><option value="">不添加 Logo</option></select></label>
+            <label class="field color-field"><span>强调色</span><div><input id="brand-accent" type="color" value="#333333"><span id="accent-value">#333333</span></div></label>
+            <div class="settings-note"><span class="tiny-rule"></span><h3>先内容，再装饰</h3><p>主图建立印象，图纸保留完整范围，文字讲清楚判断。不要用素材数量决定页面数量。</p></div>
+            <div class="settings-note"><h3>预览与成品</h3><p>这里显示内容与布局草图。导出后请查看实际渲染页，再检查长标题、图纸标注与文字换行。</p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="deliver-panel" class="step-panel" aria-labelledby="deliver-heading" hidden>
+        <div class="section-heading"><div><p class="eyebrow">ONE STORY, DIFFERENT FORMS</p><h1 id="deliver-heading">把内容，<span>交给适合的媒介。</span></h1><p class="section-description">同一份已保存内容，分别用于现场讲解、连续阅读与图片展示。</p></div><span id="delivery-revision" class="edition">尚未制作</span></div>
+        <div class="delivery-grid">
+          <section class="delivery-main">
+            <fieldset class="format-choices"><legend class="sr-only">选择输出格式</legend>
+              <label class="format-card"><input type="checkbox" name="format" value="pptx" checked><span class="format-icon" aria-hidden="true">P</span><strong>可编辑 PPT</strong><span class="format-detail">逐页讲解 · 便于继续修改</span><small>文本与图片作为页面对象输出</small></label>
+              <label class="format-card"><input type="checkbox" name="format" value="web" checked><span class="format-icon" aria-hidden="true">W</span><strong>项目网页</strong><span class="format-detail">连续阅读 · 适配窄屏</span><small>本地 HTML 交付，不自动上线</small></label>
+              <label class="format-card"><input type="checkbox" name="format" value="images" checked><span class="format-icon" aria-hidden="true">I</span><strong>页面图片</strong><span class="format-detail">版面审阅 · 便于展示</span><small>实际格式与尺寸见导出结果</small></label>
+            </fieldset>
+            <div class="export-controls"><p id="export-summary">先完成编排，再制作文件。</p><button id="export-project" class="button primary" type="button">开始制作 <span aria-hidden="true">↗</span></button></div>
+            <section id="export-results" class="export-results" aria-labelledby="results-heading" hidden><div class="panel-title"><h2 id="results-heading">已生成的文件</h2><span id="export-version" class="tag"></span></div><div id="export-files" class="export-files"></div><div id="rendered-pages" class="rendered-pages"></div></section>
+          </section>
+          <aside class="delivery-notes"><p class="eyebrow">BEFORE YOU SHARE</p><h2>完成制作之后<br>再看一遍。</h2><ol><li><span>01</span><p><strong>核对内容</strong>名称、参数与判断都有依据。</p></li><li><span>02</span><p><strong>检查版面</strong>标题完整、图纸清楚、主体未被裁切。</p></li><li><span>03</span><p><strong>确认品牌</strong>Logo、配色与客户要求一致。</p></li></ol><p class="small-note">这是独立本地试制版，尚未接入 Panda 正式客户端或模型网关。</p></aside>
+        </div>
+      </section>
+    </main>
+    <aside id="limitations-wrap" class="limitations" hidden><button id="limitations-toggle" type="button" aria-expanded="false" aria-controls="limitations-list">资料与能力说明 <span id="limitations-count"></span><span aria-hidden="true">＋</span></button><ul id="limitations-list" hidden></ul></aside>
+    <footer class="footer"><span>PANDA · CONTENT STUDIO</span><span id="footer-state">本地资料 · 分步设计 · 可继续修改</span></footer>
+  </div>
+  <dialog id="image-dialog" class="image-dialog"><button id="close-image" class="button" type="button">关闭预览 ×</button><img id="full-image" alt=""><p id="full-image-label"></p></dialog>
+  <noscript><p class="no-script">请开启 JavaScript 后使用本地工作台。</p></noscript>
+</body>
+</html>
