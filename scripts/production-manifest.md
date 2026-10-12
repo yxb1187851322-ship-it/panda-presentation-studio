@@ -50,7 +50,7 @@ node scripts/production-manifest.mjs bundle manifest.json --out new-empty-delive
 | `exports` | `[{path,format,type,editabilityEvidence?}]`；format 为 pptx / pdf；type 为 image_based / editable |
 | `editabilityEvidence` | `{path,scope}`；引用真实编辑性检查文件，并说明具体可编辑对象。工具仅检查文件存在 |
 
-页面 mode：native-template / source-facsimile / reference-visual / editable-reconstruction / semantic-web / magazine-native。
+页面 mode：native-authoring / native-template / source-facsimile / reference-visual / editable-reconstruction / semantic-web / magazine-native。`native-authoring` 用于无固定模板的新建原生 PPT，仍需实际制作与编辑性验证。
 
 `preserved` 只适用于 `source-facsimile`，且工具将逐字节比较参考图片和输出样页；PDF 页面渲染或重新编码导致字节不同的，需使用 applied 加人工对照记录。材料标签、技术图纸、Logo 的 `mayRegenerate:false` 只是约束，实际保真仍需看图，不能冒称工具已验证。
 

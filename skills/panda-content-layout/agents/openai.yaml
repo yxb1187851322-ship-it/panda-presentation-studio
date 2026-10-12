@@ -1,4 +1,4 @@
 interface:
   display_name: "Panda 内容编排"
-  short_description: "理解项目资料与品牌，协调设计和制作PPT、网页及杂志图片"
-  default_prompt: "使用 $panda-content-layout，先理解我的素材、用途和品牌要求，再结合设计参考，按我选择的形式制作PPT、网页或杂志图片。"
+  short_description: "通过对话理解表达意图，学习案例推演，制作并持续修改PPT、杂志图片与网页"
+  default_prompt: "使用 $panda-content-layout，先读我上传的资料，通过对话理解我要表达的效果，借鉴案例从问题到方案的推演方法，再按需要制作并修改PPT、杂志图片或汇报网页。"

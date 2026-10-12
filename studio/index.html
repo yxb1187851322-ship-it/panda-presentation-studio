@@ -32,6 +32,15 @@
     <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
     <div id="conflict-actions" class="conflict-actions" hidden><button id="download-draft" class="button quiet" type="button">下载修改备份</button><button id="reload-project" class="button" type="button">重新载入已保存版本</button></div>
 
+    <details id="workflow-panel" class="workflow-panel">
+      <summary><strong>内容底稿</strong><span id="workflow-summary">查看分析依据与待补内容</span><span class="workflow-chevron" aria-hidden="true">＋</span></summary>
+      <div class="workflow-body">
+        <div class="workflow-toolbar"><p>查看助手已保存的分析与引用关系。生成编排与导出仍使用现有页面，不会自动采用这份底稿。</p><button id="refresh-workflow" class="button quiet" type="button">刷新底稿</button></div>
+        <p id="workflow-status" class="workflow-status" role="status" aria-live="polite"></p>
+        <div id="workflow-content"></div>
+      </div>
+    </details>
+
     <main>
       <section id="intake-panel" class="step-panel" aria-labelledby="intake-heading">
         <div class="section-heading"><div><p class="eyebrow">FROM MATERIAL TO STORY</p><h1 id="intake-heading">好的编排，<span>从理解资料开始。</span></h1><p class="section-description">把项目图片与说明放在一起。先说清楚想表达什么，再决定每一页怎么呈现。</p></div><span class="edition">WORKSPACE / 01</span></div>

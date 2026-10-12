@@ -5,6 +5,12 @@ const formats = { pptx: '可编辑 PPT', web: '项目网页', images: '页面图
 const extensions = new Set(['png', 'jpg', 'jpeg', 'webp', 'txt', 'md', 'docx', 'pdf', 'pptx', 'dwg', 'dxf']);
 const storagePrefix = 'panda.studio.v1.';
 const state = { token: null, project: null, projects: [], step: 'intake', selected: 0, dirty: false, busy: false, connected: false, conflict: false, exports: null };
+const workflowView = {projectId:null,data:null,loading:false,error:'',request:0};
+const workflowModes = {existing:'表达已有方案','co-create':'讨论与共创方案',layout:'只调整排版'};
+const workflowRoles = {'project-asset':'项目资产','design-case':'设计推演案例','visual-reference':'视觉参考','fixed-template':'固定模板'};
+const workflowMedia = {ppt:'PPT',web:'网页',images:'图片'};
+const statementKinds = {fact:'事实',observation:'观察',interpretation:'解读',proposal:'建议'};
+const reviewStates = {reviewed:'已登记复核',needs_changes:'需要修改',stale:'修改后待复核'};
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -57,6 +63,7 @@ function setBusy(value) {
     $('save-project').disabled ||= state.conflict;
     $('export-project').disabled ||= state.conflict;
   }
+  $('refresh-workflow').disabled = value || !state.connected || !state.project || workflowView.loading;
 }
 async function operate(message, work) {
   if (state.busy || !state.connected) return;
@@ -106,6 +113,7 @@ function adoptProject(project, { clearDraft = true } = {}) {
   const summary = { id: project.id, title: project.title, updatedAt: project.updatedAt };
   if (index >= 0) state.projects[index] = summary; else state.projects.unshift(summary);
   renderAll();
+  void refreshWorkflow();
 }
 function restoreDraft(project) {
   const draft = readLocal(`draft.${project.id}`);
@@ -291,12 +299,121 @@ function renderLimitations() {
   const limitations = [...(state.project?.limitations || []), ...assetWarnings, ...(state.exports?.warnings || [])].map(value => typeof value === 'string' ? value : value.message || value.reason || JSON.stringify(value));
   const unique = [...new Set(limitations)]; $('limitations-wrap').hidden = !unique.length; $('limitations-count').textContent = `(${unique.length})`; $('limitations-list').replaceChildren(...unique.map(text => element('li', '', text)));
 }
+async function refreshWorkflow() {
+  const projectId = state.project?.id, request = ++workflowView.request;
+  if (workflowView.projectId !== projectId) workflowView.data = null;
+  Object.assign(workflowView,{projectId,loading:!!projectId,error:''});
+  renderWorkflow();
+  if (!projectId) return;
+  try {
+    const data = await api(`/api/projects/${encodeURIComponent(projectId)}/workflow`);
+    if (request === workflowView.request && projectId === state.project?.id) workflowView.data = data;
+  } catch (error) {
+    if (request === workflowView.request && projectId === state.project?.id) workflowView.error = describeError(error);
+  } finally {
+    if (request === workflowView.request) { workflowView.loading = false; renderWorkflow(); }
+  }
+}
+function workflowList(parent, title, lines) {
+  const section = element('section','workflow-group'); section.append(element('h3','',title));
+  if (!lines.length) section.append(element('p','workflow-muted','尚未登记'));
+  else { const list = element('ul'); for (const line of lines) list.append(element('li','',line)); section.append(list); }
+  parent.append(section); return section;
+}
+function renderWorkflow() {
+  const container = $('workflow-content'); container.replaceChildren();
+  const active = workflowView.projectId === state.project?.id, loading = active && workflowView.loading, readError = active ? workflowView.error : '';
+  $('refresh-workflow').disabled = state.busy || !state.connected || !state.project || loading;
+  const data = active ? workflowView.data : null;
+  const status = $('workflow-status');
+  status.textContent = readError ? `${readError}${data ? ' 以下保留上次读取的底稿。' : ''}` : loading ? '正在读取已保存的内容底稿…' : data ? `内容版本 ${data.workflow.revision} · 项目版本 ${data.projectRevision}${state.dirty ? ' · 页面有未保存修改，本视图仅显示已保存记录' : ''}` : '';
+  status.classList.toggle('workflow-warning',!!readError);
+  if (!data) {
+    $('workflow-summary').textContent = loading ? '正在读取…' : state.project ? '等待内容分析' : '先选择或创建项目';
+    container.append(element('p','workflow-empty',state.project ? '在当前助手对话中完成资料分析，并让助手把分析结果保存到本项目的内容底稿。保存后点击“刷新底稿”查看。' : '选择已有项目，或先上传资料创建项目。随后在当前助手对话中说明给谁看、想讲清楚什么，让助手分析并保存内容底稿。'));
+    return;
+  }
+  const workflow = data.workflow, assets = workflow.assets || [], units = workflow.contentUnits || [], reviews = workflow.reviews || [];
+  const full = assets.filter(asset => asset.readStatus === 'read').length, partial = assets.filter(asset => asset.readStatus === 'partial').length;
+  $('workflow-summary').textContent = `${units.length} 个内容单元 · 已读登记 ${full+partial}/${assets.length} 份`;
+  const overview = element('div','workflow-overview'), brief = workflow.brief || {};
+  const task = element('section','workflow-group'); task.append(element('h3','','任务说明'));
+  const fields = element('dl','workflow-facts');
+  for (const [name,value] of [['模式',workflowModes[brief.mode] || '待明确'],['用途',brief.purpose || '待明确'],['受众',brief.audience || '待明确'],['输出',(brief.outputs || []).map(value => workflowMedia[value] || value).join('、') || '待明确']]) {
+    fields.append(element('dt','',name),element('dd','',value));
+  }
+  task.append(fields); overview.append(task);
+  const reading = workflowList(overview,'资料阅读',[
+    `完整登记 ${full} 份 · 部分登记 ${partial} 份 · 未读 ${assets.length-full-partial} 份`,
+    '阅读范围由分析后登记；上传或提取文字不代表已经读懂。'
+  ]);
+  if (assets.length) {
+    const details = element('details','workflow-subdetails'); details.append(element('summary','','查看各份资料的角色与阅读范围'));
+    const list = element('ul');
+    for (const asset of assets) {
+      const name = state.project.assets.find(value => value.id === asset.id)?.name || asset.id;
+      list.append(element('li','',`${name} · ${asset.roles.map(role => workflowRoles[role] || role).join('、')} · ${{read:'已完整登记',partial:'部分读取',unread:'未读'}[asset.readStatus] || asset.readStatus}${asset.readScope?.length ? '；范围：'+asset.readScope.join('、') : ''}`));
+    }
+    details.append(list); reading.append(details);
+  }
+  container.append(overview);
+  const integration = data.integration || {}, differences = integration.legacyInputsDifferFromWorkflow || [], assetDifferences = integration.legacyAssetRolesDifferFromWorkflow || [];
+  if (differences.length || assetDifferences.length) {
+    const warning = element('div','workflow-warning');
+    if (differences.length) warning.append(element('p','',`底稿与工作台说明有差异：${differences.map(key => ({purpose:'用途',audience:'受众'})[key] || key).join('、')}。请在助手对话中核对采用哪一份；刷新不会覆盖任一份。`));
+    for (const item of assetDifferences) {
+      const name = state.project.assets.find(asset => asset.id === item.assetId)?.name || item.assetId;
+      warning.append(element('p','',`${name} 的角色有差异：上传用途为“${roles[item.legacyRole] || item.legacyRole}”，底稿登记为“${(item.workflowRoles || []).map(role => workflowRoles[role] || role).join('、')}”。`));
+    }
+    container.append(warning);
+  }
+  if (!units.length) container.append(element('p','workflow-empty','资料已登记，内容单元尚未形成。请在当前助手对话中完成内容分析，把每个单元要说的观点、图证和设计判断保存到本项目，再刷新查看。'));
+  const sourceMap = new Map((workflow.sources || []).map(source => [source.id,source]));
+  const sourceText = ref => {
+    const source = sourceMap.get(ref.sourceId);
+    const label = source?.assetId ? state.project.assets.find(asset => asset.id === source.assetId)?.name || source.assetId : source?.dialogueId ? `用户对话 ${source.dialogueId}` : ref.sourceId;
+    return `${label} · ${ref.locator}`;
+  };
+  units.forEach((unit,index) => {
+    const details = element('details','workflow-unit'); details.open = index === 0;
+    details.append(element('summary','',`${String(index+1).padStart(2,'0')} · ${unit.purpose}`));
+    const grid = element('div','workflow-unit-grid');
+    const statements = (unit.statementIds || []).map(id => workflow.statements.find(item => item.id === id)).filter(Boolean);
+    const decisions = (unit.decisionIds || []).map(id => workflow.decisions.find(item => item.id === id)).filter(Boolean);
+    workflowList(grid,'论点',statements.map(item => `${statementKinds[item.kind] || item.kind}${item.scope === 'reference' ? ' · 参考案例' : ''}｜${item.text}`));
+    const evidence = [...statements,...decisions].flatMap(item => item.evidence || []).map(sourceText);
+    const assetNames = (unit.assetIds || []).map(id => state.project.assets.find(asset => asset.id === id)?.name || id);
+    workflowList(grid,'图证与资料依据',[...new Set([...assetNames,...evidence])]);
+    workflowList(grid,'设计判断',decisions.map(item => `${{existing:'原方案决定',interpretation:'研究解读',proposed:'本轮建议'}[item.status] || item.status}｜${item.need} → ${item.response}${item.actions?.length ? '；落实：'+item.actions.join('；') : ''}${item.decisionIds?.length ? '；承接：'+item.decisionIds.map(id => workflow.decisions.find(upstream => upstream.id === id)?.response || id).join('、') : ''}`));
+    details.append(grid);
+    if (unit.protectedDetails?.length) details.append(element('p','workflow-unit-note',`保留要求：${unit.protectedDetails.join('；')}`));
+    const mappings = (workflow.mappings || []).filter(mapping => mapping.contentUnitIds.includes(unit.id));
+    details.append(element('p','workflow-unit-note',mappings.length ? `输出位置：${mappings.map(mapping => `${workflowMedia[mapping.medium] || mapping.medium} · ${mapping.locator}`).join('；')}（内容映射登记，不代表页面已制作）` : '输出位置尚未登记'));
+    container.append(details);
+  });
+  const issues = data.inspection?.issues || [], reviewSection = element('div','workflow-review');
+  reviewSection.append(element('h3','',data.inspection?.readyForProduction ? '内容结构已齐备，仍需核对事实与实际画面' : `还有 ${issues.length} 项待补或待复核`));
+  const issueNames = {brief_incomplete:'任务说明尚未完整',outputs_missing:'尚未选择输出媒介',content_missing:'尚未形成内容单元',asset_unread:'使用的资料尚未登记阅读',mapping_missing:'内容单元尚未覆盖所需输出位置',template_unread:'模板尚未登记阅读',review_unresolved:'存在待修改或已过期的复核'};
+  const fieldNames = {'brief.mode':'表达已有方案 / 共创 / 只改排版','brief.audience':'给谁看','brief.purpose':'想讲清楚什么','brief.outputs':'PPT / 网页 / 图片',contentUnits:'内容分析'};
+  if (issues.length) {
+    const list = element('ul');
+    for (const issue of issues) {
+      const unit = units.find(value => issue.path === `contentUnits.${value.id}`), review = reviews.find(value => issue.path === `reviews.${value.id}`);
+      list.append(element('li','',`${issueNames[issue.code] || issue.message}：${fieldNames[issue.path] || unit?.purpose || review?.record || issue.path}`));
+    }
+    reviewSection.append(list);
+  }
+  const reviewDetails = element('details','workflow-subdetails'); reviewDetails.append(element('summary','',`复核记录 · ${reviews.length} 条`));
+  if (!reviews.length) reviewDetails.append(element('p','workflow-muted','尚无复核记录；结构齐备不代表事实、审美或用户验收通过。'));
+  else { const list = element('ul'); for (const review of reviews) list.append(element('li','',`${reviewStates[review.status] || review.status}｜${review.record}`)); reviewDetails.append(list); }
+  reviewSection.append(reviewDetails); container.append(reviewSection);
+}
 function renderAll() {
   renderPicker();
   const values = state.project || readLocal('intake') || {};
   $('project-title').value = values.title === '未命名项目' ? '' : values.title || '';
   $('project-brief').value = values.brief || ''; $('project-audience').value = values.audience || '';
-  renderAssets(); renderSlides(); updateSaveState(); renderExports(); renderLimitations(); changeStep(state.step); setBusy(state.busy);
+  renderAssets(); renderSlides(); updateSaveState(); renderExports(); renderLimitations(); renderWorkflow(); changeStep(state.step); setBusy(state.busy);
 }
 function openImage(url, name) { $('full-image').src = url; $('full-image').alt = name; $('full-image-label').textContent = name; $('image-dialog').showModal(); }
 function fileBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(',')[1]); reader.onerror = () => reject(new Error(`无法读取文件：${file.name}`)); reader.readAsDataURL(file); }); }
@@ -382,6 +499,7 @@ $('download-draft').addEventListener('click', () => {
   const url = URL.createObjectURL(new Blob([JSON.stringify(draft, null, 2)], { type: 'application/json' })); const link = element('a'); link.href = url; link.download = 'Panda-未保存修改备份.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 $('limitations-toggle').addEventListener('click', () => { const expanded = $('limitations-toggle').getAttribute('aria-expanded') === 'true'; $('limitations-toggle').setAttribute('aria-expanded', String(!expanded)); $('limitations-list').hidden = expanded; });
+$('refresh-workflow').addEventListener('click', () => { if (!state.busy && state.connected) void refreshWorkflow(); });
 $('close-image').addEventListener('click', () => $('image-dialog').close());
 $('image-dialog').addEventListener('click', event => { if (event.target === $('image-dialog')) { const rect = $('image-dialog').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('image-dialog').close(); } });
 window.addEventListener('beforeunload', event => { if (state.busy) { event.preventDefault(); event.returnValue = ''; } });

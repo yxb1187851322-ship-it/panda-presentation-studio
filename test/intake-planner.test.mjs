@@ -200,6 +200,14 @@ test('single photo has no redundant cover and no invented place, area or room', 
   assert.equal(slides[0].body, '');
 });
 
+test('production guidance stays in review limitations rather than audience-facing captions', () => {
+  const { slides, limitations } = createPlan({ assets: [photo('technical-plan', 513, 868, 'plan'), { id: 'text', name: '项目说明.md', kind: 'text', role: 'content', status: 'partial', text: '这是用户提供的项目内容。', readScope: { complete: false }, warnings: [] }] });
+  assert.ok(slides.every(slide => slide.caption === ''));
+  assert.ok(limitations.some(value => value.includes('未核验尺寸')));
+  assert.ok(limitations.some(value => value.includes('部分读取')));
+  assert.equal(slides.find(slide => slide.kind === 'text').body, '这是用户提供的项目内容。');
+});
+
 test('PDF designated as a drawing is not silently converted into a text substitute', () => {
   const { slides, limitations } = createPlan({ assets: [{ id: 'drawing-pdf', name: '图纸.pdf', kind: 'document', role: 'plan', status: 'ready', text: '入口 尺寸 1200', warnings: [] }] });
   assert.equal(slides.length, 0);
@@ -223,12 +231,16 @@ test('limits and unparsed CAD are explicit rather than silent omissions', () => 
   assert.match(limitations.join(''), /图纸.dwg.*未完成可用内容解析/);
 });
 
-test('actual design card candidates explain technical-plan geometry and never license source images', async () => {
+test('design cards are explicitly unverified research candidates rather than applied layouts', async () => {
   const { cards } = JSON.parse(await readFile(new URL('../resources/design-library/index.json', import.meta.url), 'utf8'));
-  const { slides } = createPlan({ assets: [photo('drawing', 1200, 900, 'plan')] }, { cards });
+  const { slides, limitations } = createPlan({ assets: [photo('drawing', 1200, 900, 'plan')] }, { cards });
   assert.ok(slides[0].referenceIds.includes('R03-P004'));
   assert.match(slides[0].designReason, /几何保护/);
   assert.match(slides[0].designReason, /未复制案例素材/);
+  assert.match(slides[0].designReason, /研究候选（尚未验证或应用）/);
+  assert.match(slides[0].designReason, /尚未转换为本页渲染约束/);
+  assert.doesNotMatch(slides[0].designReason, /参考方法|仅借鉴设计逻辑/);
+  assert.ok(limitations.some(value => value.includes('referenceIds 仅记录设计研究候选')));
 });
 
 function renderPlan(project) {

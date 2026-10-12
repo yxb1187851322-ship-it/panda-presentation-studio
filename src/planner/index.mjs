@@ -6,9 +6,10 @@ export const PLAN_LIMITS = Object.freeze({ imageAssets: 40, textSlides: 60, text
 const TEXT_BODY = Object.freeze({ width: 980, height: 274, fontSize: 28 });
 const LABEL_FRAMES = {
   cover: { title: [568, 232, 60], caption: [520, 25, 18] },
-  split: { title: [420, 178, 46], caption: [660, 34, 18] },
-  hero: { title: [1152, 66, 44], caption: [1120, 64, 23] },
-  plan: { title: [1140, 82, 44], caption: [254, 92, 18] },
+  // Conservative capacity of the narrowest natural-image annotation column.
+  split: { title: [188, 124, 30], caption: [188, 88, 16] },
+  hero: { title: [188, 124, 30], caption: [188, 88, 16] },
+  plan: { title: [188, 124, 30], caption: [188, 88, 16] },
   gallery: { title: [1152, 82, 44], caption: [1152, 36, 18] },
   text: { title: [1072, 160, 56], caption: [980, 34, 18] },
 };
@@ -23,7 +24,10 @@ const TASK_TAGS = {
 
 function titleOf(asset) { return String(asset.title || asset.name || '未命名资料').replace(/\.[a-z0-9]{1,8}$/i, ''); }
 function shapeOf(asset) { const ratio = asset.width / asset.height; return ratio > 1.25 ? 'landscape' : ratio < 0.8 ? 'portrait' : 'square'; }
-function fits(value, width, height, size) { return estimatedLineCount(String(value).trim(), width, size) * size * 1.38 <= height; }
+function fits(value, width, height, size) {
+  try { return estimatedLineCount(String(value).trim(), width, size) * size * 1.38 <= height; }
+  catch (error) { if (error.code === 'TEXT_TOKEN_TOO_LONG') return false; throw error; }
+}
 
 function fitLabel(value, kind, field) {
   const compact = String(value).replace(/\s+/g, ' ').trim();
@@ -73,7 +77,7 @@ function paginate(text) {
 export function createPlan(project, { cards = [] } = {}) {
   if (!project || !Array.isArray(project.assets)) throw new TypeError('project.assets must be an array');
   const slides = [];
-  const limitations = ['当前为本地规则初稿，未调用视觉或语言模型。图像只依据尺寸与用户指定用途编排；图片语义、标题和项目事实需要确认。'];
+  const limitations = ['当前为本地规则初稿，未调用视觉或语言模型。图像只依据尺寸与用户指定用途编排；图片语义、标题和项目事实需要确认。', 'referenceIds 仅记录设计研究候选，尚未逐页验证或应用为渲染约束；命中研究卡不表示已经采用其版式。'];
   const assets = project.assets;
   const cardData = Array.isArray(cards) ? cards : cards?.cards || [];
   const mapped = [];
@@ -89,7 +93,7 @@ export function createPlan(project, { cards = [] } = {}) {
     if (displayCaption.endsWith('…') && displayCaption !== caption) limitations.push(`${id}：显示图注按版面容量缩略，完整资料名仍保存在资料中。`);
     const references = selectReferenceCandidates({ page_task: { project_id: project.id || 'local-project', page_task_id: id, medium: 'ppt', text_density: body.length > 260 ? 'high' : body ? 'medium' : 'low', task_tags: TASK_TAGS[kind], image_shapes: [...new Set(pageAssets.filter(a => a.kind === 'image').map(shapeOf))], locked_elements: [], require_editable: true }, cards: mapped, limit: 2 });
     pageAssets.forEach(asset => used.add(asset.id));
-    slides.push({ id, kind, title: displayTitle, body, assetIds: pageAssets.filter(a => a.kind === 'image').map(a => a.id), caption: displayCaption, sourceIds: pageAssets.map(a => a.id), referenceIds: references.candidates.map(c => c.card_id), designReason: reason + (references.candidates.length ? `；参考方法：${references.candidates.map(c => `${c.card_id}（${c.reasons[0]}）`).join('、')}。仅借鉴设计逻辑，未复制案例素材。` : '；暂无匹配的设计研究卡，需人工复核。'), imageFit: 'contain' });
+    slides.push({ id, kind, title: displayTitle, body, assetIds: pageAssets.filter(a => a.kind === 'image').map(a => a.id), caption: displayCaption, sourceIds: pageAssets.map(a => a.id), referenceIds: references.candidates.map(c => c.card_id), designReason: reason + (references.candidates.length ? `；研究候选（尚未验证或应用）：${references.candidates.map(c => `${c.card_id}（${c.reasons[0]}）`).join('、')}。研究卡尚未转换为本页渲染约束，未复制案例素材。` : '；暂无匹配的设计研究卡，需人工复核。'), imageFit: 'contain' });
   }
   const eligible = assets.filter(a => a.role !== 'logo' && a.role !== 'reference');
   const imagesAll = eligible.filter(a => a.kind === 'image' && a.status === 'ready' && a.width > 0 && a.height > 0);
@@ -100,18 +104,22 @@ export function createPlan(project, { cards = [] } = {}) {
   const hasProjectTitle = projectTitle && !['未命名项目', '新项目', '我的项目'].includes(projectTitle);
   if (hasProjectTitle && photos.length >= 2) {
     const cover = photos[0];
-    page('cover', projectTitle, '', [cover], '项目已有标题且有多张图片，采用独立标题区与完整主图建立开场；标题来自用户输入', titleOf(cover));
+    page('cover', projectTitle, '', [cover], '项目已有标题且有多张图片，采用独立标题区与完整主图建立开场；标题来自用户输入');
   }
   for (let index = 0; index < images.length; index += 1) {
     const asset = images[index];
     if (used.has(asset.id)) continue;
-    if (asset.role === 'plan') { page('plan', titleOf(asset), '', [asset], '用户指定为图纸；保留完整边界、等比缩放和独立图注，禁止装饰裁切与变形；标注可读性仍需逐页检查', '图纸按原图展示；未核验尺寸、比例与专业标注。'); continue; }
+    if (asset.role === 'plan') {
+      page('plan', titleOf(asset), '', [asset], '用户指定为图纸；白纸背景与自然比例图像建立阅读尺度，禁止裁切与变形；标注可读性仍需逐页检查');
+      limitations.push(`${asset.name}：图纸按原图展示，未核验尺寸、比例与专业标注。`);
+      continue;
+    }
     const next = images[index + 1];
     if (shapeOf(asset) === 'portrait' && next && next.role !== 'plan' && shapeOf(next) === 'portrait' && !used.has(next.id)) {
       page('gallery', '图像选辑', '', [asset, next], '两张相邻竖幅采用并列完整图幅与各自图注；并列只代表上传顺序，不预设空间或方案关系', `${titleOf(asset)} / ${titleOf(next)}`);
       index += 1;
-    } else if (asset.width / asset.height >= 1.45) page('hero', titleOf(asset), '', [asset], '横幅图片采用单张完整主图和独立标题，避免裁掉两端信息；不从画面推测空间用途', titleOf(asset));
-    else page('split', titleOf(asset), '', [asset], '中性比例或竖幅保留完整图像，标题与图注放在独立文字区，以留白控制层级', titleOf(asset));
+    } else if (asset.width / asset.height >= 1.45) page('hero', titleOf(asset), '', [asset], '完整主图按自然比例占据主视觉，标题按图片宽高采用紧凑侧注或底注；不从画面推测空间用途');
+    else page('split', titleOf(asset), '', [asset], '中性比例或竖幅采用自然比例大图，短说明紧邻图像；检查图片实际可视尺寸及原图内部空白');
   }
   let textPageCount = 0;
   for (const asset of eligible.filter(a => a.role !== 'plan' && (a.kind === 'text' || a.kind === 'document'))) {
@@ -119,7 +127,8 @@ export function createPlan(project, { cards = [] } = {}) {
     const chunks = paginate(asset.text);
     const remaining = Math.max(0, PLAN_LIMITS.textSlides - textPageCount);
     const selected = chunks.slice(0, remaining);
-    for (const [index, chunk] of selected.entries()) page('text', `${chunks.length > 1 ? `${index + 1}/${chunks.length} · ` : ''}${titleOf(asset)}`, chunk, [asset], '按原文顺序和实际正文框的行容量分页，优先在段落或句末续页；保留默认可读字号，正文未改写或补充事实', asset.readScope?.complete === false ? '该资料只完成部分读取，详见资料解析范围。' : '原始文字摘入；请确认段落顺序与表格关系。');
+    for (const [index, chunk] of selected.entries()) page('text', `${chunks.length > 1 ? `${index + 1}/${chunks.length} · ` : ''}${titleOf(asset)}`, chunk, [asset], '按原文顺序和实际正文框的行容量分页，优先在段落或句末续页；保留默认可读字号，正文未改写或补充事实');
+    if (asset.readScope?.complete === false) limitations.push(`${asset.name}：该资料只完成部分读取，详见资料解析范围。`);
     textPageCount += selected.length;
     if (selected.length < chunks.length) limitations.push(`${asset.name}：需要 ${chunks.length} 个文字页，本次生成 ${selected.length} 页；达到总计 ${PLAN_LIMITS.textSlides} 个文字页上限，剩余原文保留在资料中。`);
     if (asset.status === 'partial') limitations.push(`${asset.name}：资料仅部分解析，当前排版不代表已读取完整文档。`);

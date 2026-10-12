@@ -3,7 +3,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-const MODES = ['native-template', 'source-facsimile', 'reference-visual', 'editable-reconstruction', 'semantic-web', 'magazine-native'];
+const MODES = ['native-authoring', 'native-template', 'source-facsimile', 'reference-visual', 'editable-reconstruction', 'semantic-web', 'magazine-native'];
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 const text = value => typeof value === 'string' && value.trim().length > 0;
 const array = value => Array.isArray(value) ? value : [];

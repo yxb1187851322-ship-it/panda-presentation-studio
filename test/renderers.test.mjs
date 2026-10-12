@@ -65,6 +65,91 @@ test('cover preserves its caption as editable text', () => {
   assert.equal(layout.elements.find(element => element.name === 'caption').text, '项目图片说明');
 });
 
+test('portrait material uses its natural bitmap bounds and a compact adjacent annotation', () => {
+  const asset = { id: 'material', width: 892, height: 1119, role: 'content' };
+  const source = { id: 'materials', kind: 'split', title: '材料的主辅关系', body: '浅木与中性色构成大面。\n蓝绿与金属形成点缀。', caption: '材料意向', assetIds: ['material'] };
+  const layout = buildSlideLayout(source, 0, fixture, new Map([['material', asset]]));
+  const picture = layout.elements.find(element => element.type === 'image');
+  const title = layout.elements.find(element => element.name === 'title');
+  const body = layout.elements.find(element => element.name === 'body');
+  assert.ok(Math.abs(picture.height - 648) < 1e-10);
+  assert.ok(Math.abs(picture.width / picture.height - 892 / 1119) < 1e-10);
+  assert.ok(title.left > picture.left + picture.width);
+  assert.equal(title.fontSize, 30);
+  assert.equal(body.fontSize, 20);
+  assert.equal(layout.background, '#FFFFFF');
+  assert.equal(layout.composition.strategy, 'portrait-with-side-note');
+  assert.equal(layout.composition.imageAreaRatio, picture.width * picture.height / (1280 * 720));
+  assert.match(layout.composition.measurement, /not an aesthetic score/);
+});
+
+test('moderate landscape photograph fills the page height without cropping or overlaid notes', () => {
+  const images = new Map([['room', { id: 'room', width: 1835, height: 1282 }], ['logo', { id: 'logo', role: 'logo', width: 500, height: 100 }]]);
+  const project = { ...fixture, brand: { logoAssetId: 'logo' } };
+  const source = { id: 'room', kind: 'hero', title: '主卧的层次', body: '屏风与木饰面形成前后层次。', caption: '设计参考', assetIds: ['room'] };
+  const layout = buildSlideLayout(source, 0, project, images);
+  const picture = layout.elements.find(element => element.assetId === 'room');
+  assert.equal(picture.height, 720);
+  assert.equal(picture.top, 0);
+  assert.equal(picture.fit, 'contain');
+  assert.ok(Math.abs(picture.width / picture.height - 1835 / 1282) < 1e-10);
+  assert.equal(layout.composition.strategy, 'photograph-with-side-note');
+  for (const item of layout.elements.filter(element => element !== picture)) assert.ok(item.left + item.width <= picture.left);
+  assert.throws(() => buildSlideLayout({ ...source, body: '不能静默删掉的长说明。'.repeat(40) }, 0, project, images), { code: 'TEXT_OVERFLOW' });
+});
+
+test('wide photograph and its annotation band share the actual image axis', () => {
+  const asset = { id: 'wide', width: 3060, height: 1700 };
+  const source = { id: 'wide', kind: 'hero', title: '客餐厅', body: '浅木墙面连接客厅与餐厅。', caption: '空间概念', assetIds: ['wide'] };
+  const layout = buildSlideLayout(source, 0, fixture, new Map([['wide', asset]]));
+  const picture = layout.elements.find(element => element.type === 'image');
+  const title = layout.elements.find(element => element.name === 'title');
+  assert.equal(layout.composition.strategy, 'photograph-with-bottom-note');
+  assert.ok(Math.abs(picture.width / picture.height - 1.8) < 1e-10);
+  assert.equal(title.left, picture.left);
+  for (const note of layout.elements.filter(element => ['title', 'body', 'caption'].includes(element.name))) {
+    assert.ok(note.top >= picture.top + picture.height);
+    assert.ok(note.left >= picture.left && note.left + note.width <= picture.left + picture.width + 0.01);
+  }
+});
+
+test('short portrait drawing plate stays centered on white paper with adjacent small captions', () => {
+  const asset = { id: 'plan', width: 513, height: 868, role: 'plan' };
+  const source = { id: 'plan', kind: 'hero', title: '平面总览', body: '', caption: '设计方署名', assetIds: ['plan'] };
+  const layout = buildSlideLayout(source, 0, fixture, new Map([['plan', asset]]));
+  const picture = layout.elements.find(element => element.type === 'image');
+  assert.equal(layout.kind, 'plan');
+  assert.equal(layout.background, '#FFFFFF');
+  assert.equal(layout.composition.strategy, 'drawing-centered-plate');
+  assert.equal(picture.height, 624);
+  assert.ok(Math.abs(picture.left + picture.width / 2 - 640) < 1e-10);
+  assert.equal(picture.fit, 'contain');
+  assert.ok(Math.abs(picture.width / picture.height - 513 / 868) < 1e-10);
+  const title = layout.elements.find(element => element.name === 'title');
+  const caption = layout.elements.find(element => element.name === 'caption');
+  assert.equal(caption.text, source.caption);
+  assert.equal(title.left, picture.left);
+  assert.equal(caption.left, picture.left);
+  assert.equal(title.fontSize, 22);
+  assert.equal(caption.fontSize, 14);
+  assert.ok(title.top >= picture.top + picture.height && caption.top >= title.top + title.height);
+  assert.ok(caption.top + caption.height <= 720);
+  const withBody = buildSlideLayout({ ...source, body: '保留入口、公共区域与私密区域的相互关系。' }, 0, fixture, new Map([['plan', asset]]));
+  assert.equal(withBody.composition.strategy, 'drawing-with-side-note');
+  assert.equal(withBody.elements.find(element => element.type === 'image').height, 672);
+  const longCaption = buildSlideLayout({ ...source, caption: '完整说明与署名'.repeat(5) }, 0, fixture, new Map([['plan', asset]]));
+  assert.equal(longCaption.composition.strategy, 'drawing-with-side-note');
+});
+
+test('geometry receipts measure visible content for existing contain frames too', () => {
+  const asset = { id: 'cover-image', width: 1800, height: 1200 };
+  const layout = buildSlideLayout({ id: 'cover', kind: 'cover', title: '空间方案', assetIds: [asset.id] }, 0, fixture, new Map([[asset.id, asset]]));
+  const recorded = layout.composition.images[0];
+  assert.equal(recorded.width, 520);
+  assert.ok(Math.abs(recorded.height - 520 / 1.5) < 1e-10);
+  assert.ok(recorded.height < recorded.frame.height);
+});
+
 test('offline HTML escapes uploaded text and prevents remote/script execution', () => {
   const hostile = { ...fixture, title: '<script>alert(1)</script>', slides: [{ ...fixture.slides[0], title: '<img src=x onerror=alert(1)>', body: '<script>bad()</script>' }] };
   const layout = buildSlideLayout(hostile.slides[0], 0, hostile, new Map());

@@ -105,3 +105,22 @@ test('missing preview files fail before creating a deliverable folder', async t 
   await assert.rejects(bundleProductionManifest(manifest, { baseDir, outputDir }), { code: 'MANIFEST_INVALID' });
   await assert.rejects(fs.stat(outputDir), { code: 'ENOENT' });
 });
+
+test('native authoring is recorded without pretending template reuse or automatic editability verification', async t => {
+  const { baseDir, manifest } = await fixture(t);
+  manifest.pages[0].mode = 'native-authoring';
+  await fs.writeFile(path.join(baseDir, 'native.pptx'), 'Synthetic export for manifest validation only.');
+  manifest.exports = [{ path: 'native.pptx', format: 'pptx', type: 'editable' }];
+  const missingEvidence = await checkProductionManifest(manifest, { baseDir });
+  assert.ok(!missingEvidence.errors.some(error => error.code === 'PAGE_MODE'));
+  assert.ok(missingEvidence.errors.some(error => error.code === 'EDITABILITY_SCOPE_REQUIRED'));
+  await fs.writeFile(path.join(baseDir, 'editability.md'), 'Synthetic object inspection record.');
+  manifest.exports[0].editabilityEvidence = { path: 'editability.md', scope: 'Text and tables in this test fixture.' };
+  const bundled = await bundleProductionManifest(manifest, { baseDir, outputDir: path.join(baseDir, 'delivery') });
+  assert.equal(bundled.report.ok, true);
+  assert.ok(bundled.report.warnings.some(w => w.code === 'EDITABILITY_NOT_AUTOMATICALLY_VERIFIED'));
+  const receipt = JSON.parse(await fs.readFile(path.join(bundled.outputDir, 'production-receipt.json'), 'utf8'));
+  assert.equal(receipt.pages[0].mode, 'native-authoring');
+  assert.equal(receipt.pages[0].referenceBinding, null);
+  assert.equal(receipt.sample.status, 'draft');
+});

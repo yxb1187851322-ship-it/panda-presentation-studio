@@ -3,12 +3,14 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { createContentWorkflow, applyContentWorkflow, inspectContentWorkflow } from '../core/content-workflow.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const ID = /^[a-zA-Z0-9-]{1,80}$/;
 const ROLES = new Set(['content', 'logo', 'plan', 'reference']);
 const KINDS = new Set(['cover', 'hero', 'split', 'gallery', 'text', 'plan']);
 const FORMATS = new Set(['pptx', 'web', 'images']);
+const WORKFLOW_INTEGRATION = Object.freeze({legacyPlannerConsumesWorkflow:false,legacyRendererConsumesWorkflow:false});
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation', '.json':'application/json; charset=utf-8', '.zip':'application/zip' };
 const error = (status, message) => Object.assign(new Error(message), { status });
 const str = (v, max, fallback = '') => {
@@ -89,6 +91,41 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
     });
   }
   function invalidate(p) { p.revision++; p.exports = null; }
+  const workflowAsset = asset => ({ id:asset.id, roles:[asset.role === 'reference' ? 'visual-reference' : 'project-asset'], readStatus:'unread', readScope:[] });
+  function workflowFor(project) {
+    return project.workflow ?? createContentWorkflow({
+      brief:{...(project.audience ? {audience:project.audience} : {}),...(project.brief ? {purpose:project.brief} : {})},
+      assets:project.assets.map(workflowAsset)
+    });
+  }
+  function workflowResult(project, workflow = workflowFor(project)) {
+    // A difference is visible without guessing which brief is authoritative.
+    const legacyInputsDifferFromWorkflow = Object.entries({purpose:project.brief,audience:project.audience})
+      .filter(([key,value]) => (value ?? '') !== (workflow.brief[key] ?? '')).map(([key]) => key);
+    const legacyAssetRolesDifferFromWorkflow = project.assets.flatMap(asset => {
+      const saved = workflow.assets.find(item => item.id === asset.id);
+      const expected = asset.role === 'reference' ? 'visual-reference' : 'project-asset';
+      return saved && !saved.roles.includes(expected)
+        ? [{assetId:asset.id,legacyRole:asset.role,workflowRoles:[...saved.roles]}] : [];
+    });
+    return { projectRevision:project.revision, workflow, inspection:inspectContentWorkflow(workflow),
+      integration:{...WORKFLOW_INTEGRATION,legacyInputsDifferFromWorkflow,legacyAssetRolesDifferFromWorkflow} };
+  }
+  function applyWorkflow(project, current, change, expectedRevision) {
+    let next;
+    try { next = applyContentWorkflow(current, change, {expectedRevision}); }
+    catch (e) {
+      if (e.code === 'WORKFLOW_CONFLICT') throw Object.assign(error(409,e.message), {code:e.code});
+      if (e.code === 'WORKFLOW_INVALID' && Array.isArray(e.issues) && e.issues.every(item =>
+        item && ['code','path','message'].every(key => typeof item[key] === 'string'))) {
+        throw Object.assign(error(400,e.message), {code:e.code,issues:e.issues.map(({code,path,message}) => ({code,path,message}))});
+      }
+      throw e;
+    }
+    const assetIds = new Set(project.assets.map(asset => asset.id));
+    if (next.assets.some(asset => !assetIds.has(asset.id))) throw error(400, '内容流程引用了未上传到当前项目的资料');
+    return next;
+  }
   const server = http.createServer(async (req, res) => {
     const json = (status, value) => { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }); res.end(JSON.stringify(value)); };
     async function sendFile(file, { download = false, name } = {}) {
@@ -113,7 +150,7 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
         const expected = Buffer.from(token);
         if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) throw error(403, '会话已变化，请刷新页面');
       }
-      if (url.pathname === '/api/session' && req.method === 'GET') return json(200, { token, capabilities:{local:true,modelConnected:false,formats:['pptx','web','images'],cadParsed:false,maxAssetBytes:64*1024*1024} });
+      if (url.pathname === '/api/session' && req.method === 'GET') return json(200, { token, capabilities:{local:true,contentWorkflowAvailable:true,...WORKFLOW_INTEGRATION,modelConnected:false,formats:['pptx','web','images'],cadParsed:false,maxAssetBytes:64*1024*1024} });
       if (url.pathname === '/api/projects' && req.method === 'GET') {
         const dirs = await fs.readdir(dataDir, { withFileTypes:true });
         const projects = [];
@@ -132,6 +169,7 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
         if (req.method === 'GET') {
           const p = await load(id);
           if (parts.length === 3) return json(200,p);
+          if (parts.length === 4 && parts[3] === 'workflow') return json(200,workflowResult(p));
           if (parts[3] === 'assets' && parts.length === 5) {
             const a = p.assets.find(a => a.id === uid(parts[4]));
             if (!a) throw error(404, '资料不存在');
@@ -153,6 +191,15 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
         if (jobs.has(id)) throw error(409,'正在导出当前版本，完成后再修改');
         return await locked(id, async () => {
           const p = await load(id);
+          if (parts.length === 4 && parts[3] === 'workflow' && req.method === 'PUT') {
+            if (!body || typeof body !== 'object' || Array.isArray(body)) throw error(400, '内容流程请求需要 JSON 对象');
+            checkRevision(p, body);
+            if (!Number.isInteger(body.expectedWorkflowRevision) || body.expectedWorkflowRevision < 0) throw error(400, '需要有效的内容流程版本');
+            const current = workflowFor(p);
+            if (body.expectedWorkflowRevision !== current.revision) throw error(409, '内容流程已有新修改，请重新载入后再操作');
+            p.workflow = applyWorkflow(p, current, body.change, body.expectedWorkflowRevision);
+            invalidate(p); await save(p); return json(200,workflowResult(p));
+          }
           if (parts.length === 3 && req.method === 'PUT') {
             checkRevision(p, body);
             if (body.slides !== undefined) p.slides = validateSlides(body.slides,p);
@@ -188,6 +235,7 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
             const a = await importAsset({projectDir:projectDir(id),name:str(body.name,255),buffer,role:body.role || 'content'});
             a.bytes = buffer.length;
             p.assets.push(a);
+            if (p.workflow) p.workflow = applyWorkflow(p, p.workflow, {type:'upsertAsset',value:workflowAsset(a)}, p.workflow.revision);
             if (a.role === 'logo' && a.kind === 'image') p.brand.logoAssetId = a.id;
             invalidate(p); await save(p); return json(200,p);
           }
@@ -223,7 +271,9 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
       }
       throw error(404,'入口不存在');
     } catch (e) {
-      if (!res.headersSent) json(e.status || 500,{error:e.status ? e.message : '操作未完成，资料已保留。请查看本机服务日志后重试。'});
+      const details = e.code === 'WORKFLOW_INVALID' && e.status === 400 ? {code:e.code,issues:e.issues}
+        : e.code === 'WORKFLOW_CONFLICT' && e.status === 409 ? {code:e.code} : {};
+      if (!res.headersSent) json(e.status || 500,{error:e.status ? e.message : '操作未完成，资料已保留。请查看本机服务日志后重试。',...details});
       else res.end();
       if (!e.status) console.error('[Panda studio]',e.message);
     }
