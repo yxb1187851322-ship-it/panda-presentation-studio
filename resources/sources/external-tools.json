@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0",
+  "research_title": "Panda PPT 可接入资源官方文档研究",
+  "accessed_date": "2026-10-11",
+  "timezone": "Asia/Shanghai",
+  "scope": "5 项资源；不安装、不执行外部代码、不批量下载模板",
+  "verification_level": "official_documentation_review_only",
+  "runtime_verified": false,
+  "visual_quality_verified": false,
+  "commit_pinning": "未固定 commit；只记录访问日与读取到的版本声明，实施前需固定实际版本",
+  "source_handling": "外部文档作为证据材料；其运行命令、确认流程及营销推荐未执行",
+  "resources": [
+    {
+      "id": "microsoft-slide-master",
+      "name": "Microsoft Slide Master / POTX",
+      "categories": [
+        "official_design_structure_knowledge",
+        "user_authored_template_container"
+      ],
+      "integration": "品牌包结构依据；自制或授权母版，不导入官网素材",
+      "license": {
+        "code": "非开源库",
+        "documentation": "Microsoft 网站条款",
+        "assets": "逐项确认；没有模板再分发授权的已验证证据"
+      },
+      "sources": [
+        {
+          "id": "ms-create",
+          "url": "https://support.microsoft.com/en-us/powerpoint/create-and-save-a-powerpoint-template",
+          "type": "official_support",
+          "read_scope": "模板创建、母版/布局、占位符、保存POTX及网页版限制",
+          "evidence_status": "read"
+        },
+        {
+          "id": "ms-theme",
+          "url": "https://support.microsoft.com/en-us/powerpoint/save-a-slide-design-theme-as-a-template-in-powerpoint",
+          "type": "official_support",
+          "read_scope": "保存模板及Themes vs Templates",
+          "evidence_status": "read"
+        },
+        {
+          "id": "ms-terms",
+          "url": "https://www.microsoft.com/en-us/legal/terms-of-use",
+          "type": "official_terms",
+          "read_scope": "Content、Software、Documents 相关条款",
+          "evidence_status": "read"
+        }
+      ],
+      "tests_pending": [
+        "自制母版主题传播",
+        "中文长标题与占位符",
+        "换图裁切",
+        "固定元素与页内元素归属"
+      ]
+    },
+    {
+      "id": "pptxgenjs",
+      "name": "PptxGenJS",
+      "categories": [
+        "native_pptx_generator"
+      ],
+      "integration": "原生新稿后端候选",
+      "license": {
+        "code": "MIT",
+        "documentation": "仓库许可证覆盖随附文档，官网仍核对适用条款",
+        "assets": "输入字体/照片/Logo 分别登记"
+      },
+      "sources": [
+        {
+          "id": "gen-readme",
+          "url": "https://github.com/gitbrent/PptxGenJS",
+          "read_url": "https://raw.githubusercontent.com/gitbrent/PptxGenJS/master/README.md",
+          "type": "official_repository_readme",
+          "read_scope": "已读取README主体与许可指针",
+          "evidence_status": "read"
+        },
+        {
+          "id": "gen-masters",
+          "url": "https://gitbrent.github.io/PptxGenJS/docs/masters/",
+          "type": "official_api_documentation",
+          "read_scope": "母版定义、原生布局与命名占位符",
+          "evidence_status": "read",
+          "page_notes": "页面显示较早更新时间；接入前需核对锁定版本"
+        },
+        {
+          "id": "gen-license",
+          "url": "https://raw.githubusercontent.com/gitbrent/PptxGenJS/master/LICENSE",
+          "type": "repository_license",
+          "read_scope": "完整许可证",
+          "evidence_status": "read"
+        }
+      ],
+      "tests_pending": [
+        "实际包版本与依赖",
+        "原生文字/表格/图表可编辑性",
+        "中文排字",
+        "CAD派生图像保真",
+        "既定交付应用逐页渲染"
+      ]
+    },
+    {
+      "id": "pptx-automizer",
+      "name": "pptx-automizer",
+      "categories": [
+        "existing_pptx_template_modifier"
+      ],
+      "integration": "已有品牌模板复用后端候选",
+      "license": {
+        "code": "MIT",
+        "assets": "输入PPT模板与字体图片不由库许可授予"
+      },
+      "sources": [
+        {
+          "id": "auto-readme",
+          "url": "https://github.com/singerla/pptx-automizer",
+          "read_url": "https://raw.githubusercontent.com/singerla/pptx-automizer/main/README.md",
+          "type": "official_repository_readme",
+          "read_scope": "完整README",
+          "evidence_status": "read"
+        },
+        {
+          "id": "auto-limits",
+          "url": "https://singerla.github.io/pptx-automizer/limitations",
+          "type": "official_documentation",
+          "read_scope": "完整限制页",
+          "evidence_status": "read"
+        },
+        {
+          "id": "auto-masters",
+          "url": "https://singerla.github.io/pptx-automizer/masters-layouts",
+          "type": "official_documentation",
+          "read_scope": "母版导入、布局限制、自动导入示例",
+          "evidence_status": "read"
+        },
+        {
+          "id": "auto-license",
+          "url": "https://raw.githubusercontent.com/singerla/pptx-automizer/main/LICENSE",
+          "type": "repository_license",
+          "read_scope": "完整许可证",
+          "evidence_status": "read"
+        }
+      ],
+      "tests_pending": [
+        "对象命名与替换",
+        "未改页保真",
+        "复制/删除页",
+        "动画与关系ID",
+        "母版与布局中的复杂图片",
+        "中文长文案容量"
+      ]
+    },
+    {
+      "id": "ppt-master",
+      "name": "hugohe3/ppt-master",
+      "categories": [
+        "agent_workflow",
+        "design_knowledge_model",
+        "python_toolchain"
+      ],
+      "declared_skill_version": "6.7.0",
+      "integration": "先借鉴分层；作为可选后端单独适配与验证",
+      "license": {
+        "code": "MIT",
+        "dependencies": "PDF转换PyMuPDF为AGPL-3.0；仓库提示商业许可路径，非完整依赖合规审计",
+        "assets": "图标存在MIT、CC BY 4.0、CC0及商标边界，逐项处理"
+      },
+      "sources": [
+        {
+          "id": "master-readme",
+          "url": "https://github.com/hugohe3/ppt-master",
+          "type": "official_repository_readme",
+          "read_scope": "定位、能力路线、输出、依赖与许可章节；忽略营销与赞助商推荐",
+          "evidence_status": "read"
+        },
+        {
+          "id": "master-skill",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/main/skills/ppt-master/SKILL.md",
+          "type": "official_workflow",
+          "read_scope": "完整125行入口，作为研究材料而非执行指令",
+          "evidence_status": "read"
+        },
+        {
+          "id": "master-template",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/main/skills/ppt-master/workflows/create-template.md",
+          "type": "official_workflow",
+          "read_scope": "入口、四种模板分类、参考通道、规范提取；重点读取1-82行",
+          "evidence_status": "partial_read_relevant_sections"
+        },
+        {
+          "id": "master-edit",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/main/skills/ppt-master/workflows/edit-native-pptx.md",
+          "type": "official_workflow",
+          "read_scope": "编辑路线、输入、原生回写合同、计划、确认关卡、编辑约束；重点读取1-96行",
+          "evidence_status": "partial_read_relevant_sections"
+        },
+        {
+          "id": "master-root-requirements",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/main/requirements.txt",
+          "type": "dependency_manifest",
+          "read_scope": "完整；转向技能包内requirements",
+          "evidence_status": "read"
+        },
+        {
+          "id": "master-requirements",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/main/skills/ppt-master/requirements.txt",
+          "type": "dependency_manifest",
+          "read_scope": "完整依赖声明；未安装",
+          "evidence_status": "read"
+        },
+        {
+          "id": "master-conversion",
+          "url": "https://github.com/hugohe3/ppt-master/blob/main/skills/ppt-master/scripts/docs/conversion.md",
+          "type": "official_tool_documentation",
+          "read_scope": "PDF转换、PyMuPDF许可提示及部分文档/PPT结构转换说明",
+          "evidence_status": "partial_read_relevant_sections"
+        },
+        {
+          "id": "master-icons",
+          "url": "https://github.com/hugohe3/ppt-master/blob/main/skills/ppt-master/templates/icons/THIRD_PARTY_NOTICES.md",
+          "type": "third_party_notices",
+          "read_scope": "完整图标通知主体、许可与商标边界",
+          "evidence_status": "read"
+        },
+        {
+          "id": "master-license",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/main/LICENSE",
+          "type": "repository_license",
+          "read_scope": "完整许可证",
+          "evidence_status": "read"
+        }
+      ],
+      "tests_pending": [
+        "锁定版本",
+        "依赖和资产清单",
+        "Panda对话流程适配",
+        "中文SVG到原生对象",
+        "图表/表格数据编辑",
+        "PPT母版",
+        "局部改稿与不支持对象保留"
+      ]
+    },
+    {
+      "id": "marp",
+      "name": "Marp CLI",
+      "categories": [
+        "markdown_slide_structure",
+        "html_pdf_image_renderer"
+      ],
+      "integration": "校样和页式HTML辅助；非原生可编辑PPT主后端",
+      "license": {
+        "code": "MIT",
+        "assets": "第三方主题/字体/照片单独确认",
+        "dependencies": "浏览器与LibreOffice等组件独立核对"
+      },
+      "sources": [
+        {
+          "id": "marp-readme",
+          "url": "https://github.com/marp-team/marp-cli",
+          "read_url": "https://raw.githubusercontent.com/marp-team/marp-cli/main/README.md",
+          "type": "official_repository_readme",
+          "read_scope": "需求、HTML/PDF/PPTX/图片导出、experimental editable限制、主题、配置与本地文件访问；不是全772行逐项审核",
+          "evidence_status": "partial_read_relevant_sections"
+        },
+        {
+          "id": "marp-site",
+          "url": "https://marp.app/",
+          "type": "official_project_site",
+          "read_scope": "项目定位与入口",
+          "evidence_status": "read"
+        },
+        {
+          "id": "marp-license",
+          "url": "https://raw.githubusercontent.com/marp-team/marp-cli/main/LICENSE",
+          "type": "repository_license",
+          "read_scope": "完整许可证",
+          "evidence_status": "read"
+        }
+      ],
+      "tests_pending": [
+        "中文字体",
+        "布局溢出",
+        "渲染图片分辨率",
+        "实验可编辑导出视觉差异",
+        "备注支持",
+        "本地文件访问隔离"
+      ]
+    }
+  ],
+  "research_decisions": [
+    "不以星数、模板数量或宣传图判断高审美。",
+    "设计规则、品牌资产、可执行工具分别入库。",
+    "当前没有证据证明这5项提供可靠CAD语义解析。",
+    "普通PPTX导出、原生可编辑对象、可改图表数据分别记录。",
+    "许可记录是所读官方材料的范围说明，未完成产品分发形态审计。"
+  ]
+}

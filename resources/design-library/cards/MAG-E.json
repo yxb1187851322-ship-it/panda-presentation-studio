@@ -1,0 +1,32 @@
+{
+  "id": "MAG-E",
+  "title": "独立刊头与室内摄影纵向分层",
+  "card": "MAG-E.md",
+  "tags": [
+    "封面",
+    "刊头",
+    "室内",
+    "上下分区",
+    "摄影留白",
+    "纵向阅读"
+  ],
+  "text_role": "识别标题与摄影、解释文字分区",
+  "negative_space": "白色刊头区及照片空墙；外部米色不计入",
+  "suitable_for": [
+    "酒店专题",
+    "住宅与会所封面",
+    "单项目介绍"
+  ],
+  "ppt_adaptation": "横屏重设标题带或侧栏，避免将竖封面缩成小图",
+  "web_adaptation": "标题图片介绍采用连续结构，底部细字进入正文区",
+  "avoid": [
+    "复制刊号条码",
+    "默认米色背景",
+    "将多行小字压在复杂地面上"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-E-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

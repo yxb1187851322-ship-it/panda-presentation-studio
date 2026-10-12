@@ -1,0 +1,33 @@
+{
+  "id": "MAG-F",
+  "title": "清晰度层次与安静标题带",
+  "card": "MAG-F.md",
+  "tags": [
+    "人物关系",
+    "前后景",
+    "虚实",
+    "光带",
+    "情绪",
+    "多主体"
+  ],
+  "text_role": "在平静上方建立标题，保全面部关系",
+  "negative_space": "上部低细节背景与局部暗区虚焦",
+  "suitable_for": [
+    "人物群像",
+    "生活叙事",
+    "有原生层次的空间照片"
+  ],
+  "ppt_adaptation": "一页一个主题，照片与清楚标题配合，长说明另排",
+  "web_adaptation": "不同宽度重设文字安全区，保留多主体关系",
+  "avoid": [
+    "自动加光晕滤镜",
+    "复制奖项影评",
+    "由成品反推真实摄影工序",
+    "虚构人物关系"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-F-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

@@ -1,0 +1,254 @@
+{
+  "schema_version": "0.4-traceability-example",
+  "example_only": true,
+  "warning": "全部为虚构字段演示。下列路径并无实际文件；未执行渲染、解析、修改或批准。null哈希不能用于真实交付核验。",
+  "project_id": "fictional-hotel",
+  "content_version": "c002",
+  "visual_version": "v001",
+  "requested_outputs": [
+    "ppt",
+    "web",
+    "images"
+  ],
+  "coverage": {
+    "scope": "per_selected_output",
+    "photo_policy": "each_required_photo_has_a_binding",
+    "document_policy": "agreed_content_units_not_every_physical_page",
+    "cad_policy": "unresolved_layouts_not_claimed_complete",
+    "status": "fictional_example_only"
+  },
+  "assets": [
+    {
+      "asset_id": "F01",
+      "kind": "document",
+      "role": "project_facts",
+      "path": "originals/design-note.pdf",
+      "sha256": null,
+      "fingerprint_status": "example_placeholder",
+      "locator_schema": "page_1_based",
+      "read_range": [
+        2
+      ],
+      "total_pages": 8,
+      "completeness": "example_partial_only"
+    },
+    {
+      "asset_id": "F02",
+      "kind": "image",
+      "role": "project_photo",
+      "path": "originals/arrival.jpg",
+      "sha256": null,
+      "fingerprint_status": "example_placeholder",
+      "source_dimensions": [
+        6000,
+        4000
+      ],
+      "read_status": "fictional_visual_inspection"
+    },
+    {
+      "asset_id": "F03",
+      "kind": "cad",
+      "role": "project_plan",
+      "path": "originals/plan.dwg",
+      "sha256": null,
+      "fingerprint_status": "example_placeholder",
+      "units_status": "unknown",
+      "layouts_status": "not_verified",
+      "structure_status": "not_verified",
+      "render_status": "not_verified"
+    }
+  ],
+  "derivatives": [
+    {
+      "asset_id": "D01",
+      "kind": "page_preview",
+      "parent_asset_id": "F01",
+      "source_locator": {
+        "page": 2
+      },
+      "path": "extracted/F01/page-002.png",
+      "sha256": null,
+      "operation": {
+        "name": "pdf_page_render",
+        "dpi": 180,
+        "tool": "example_only"
+      },
+      "execution_status": "not_performed"
+    },
+    {
+      "asset_id": "D02",
+      "kind": "image_crop",
+      "parent_asset_id": "F02",
+      "source_locator": {
+        "image": "full_frame"
+      },
+      "path": "extracted/F02/arrival-crop.jpg",
+      "sha256": null,
+      "operation": {
+        "name": "crop",
+        "coordinate_system": "normalized_xywh",
+        "crop": [
+          0.1,
+          0.05,
+          0.8,
+          0.9
+        ],
+        "stretch": false,
+        "subject_review": "example_only"
+      },
+      "execution_status": "not_performed"
+    }
+  ],
+  "content_units": [
+    {
+      "content_id": "U01",
+      "title": "迎宾厅",
+      "facts": [
+        {
+          "fact_id": "T01",
+          "text": "空间名称：迎宾厅",
+          "source": {
+            "kind": "user_message",
+            "message_id": "fictional-message-002",
+            "status": "fictional_example_only"
+          },
+          "supersedes": "旧名称：大厅"
+        }
+      ],
+      "source_context": [
+        {
+          "asset_id": "F01",
+          "page": 2
+        }
+      ],
+      "asset_ids": [
+        "F02",
+        "D01",
+        "D02"
+      ],
+      "unresolved": [
+        "图纸F03单位与布局未核验，不能输出精确面积"
+      ],
+      "content_version": "c002"
+    }
+  ],
+  "output_bindings": [
+    {
+      "binding_id": "B01",
+      "output": "ppt",
+      "locator": {
+        "slide": 2
+      },
+      "content_ids": [
+        "U01"
+      ],
+      "asset_ids": [
+        "F02",
+        "D01"
+      ],
+      "content_version": "c002",
+      "visual_version": "v001",
+      "layout_change": "none",
+      "status": "fictional_current"
+    },
+    {
+      "binding_id": "B02",
+      "output": "web",
+      "locator": {
+        "section_id": "arrival"
+      },
+      "content_ids": [
+        "U01"
+      ],
+      "asset_ids": [
+        "F02",
+        "D01"
+      ],
+      "content_version": "c002",
+      "visual_version": "v001",
+      "layout_change": "mobile_local_spacing",
+      "status": "fictional_current"
+    },
+    {
+      "binding_id": "B03",
+      "output": "images",
+      "locator": {
+        "image_index": 2
+      },
+      "content_ids": [
+        "U01"
+      ],
+      "asset_ids": [
+        "D02"
+      ],
+      "content_version": "c001",
+      "visual_version": "v001",
+      "status": "fictional_stale_content",
+      "reason": "示例中本次只授权重出PPT与网页，图片保持旧版"
+    }
+  ],
+  "deliverables": [
+    {
+      "deliverable_id": "O01",
+      "format": "pptx",
+      "path": "outputs/v002/project.pptx",
+      "binding_ids": [
+        "B01"
+      ],
+      "content_version": "c002",
+      "visual_version": "v001",
+      "file_exists": false,
+      "technical": "not_run",
+      "visual": "not_run"
+    },
+    {
+      "deliverable_id": "O02",
+      "format": "html_directory",
+      "path": "outputs/v002/web/index.html",
+      "binding_ids": [
+        "B02"
+      ],
+      "content_version": "c002",
+      "visual_version": "v001",
+      "file_exists": false,
+      "technical": "not_run",
+      "visual": "not_run"
+    },
+    {
+      "deliverable_id": "O03",
+      "format": "png",
+      "path": "outputs/v001/image-02.png",
+      "binding_ids": [
+        "B03"
+      ],
+      "content_version": "c001",
+      "visual_version": "v001",
+      "file_exists": false,
+      "status": "stale_content_example",
+      "technical": "not_run",
+      "visual": "not_run"
+    }
+  ],
+  "revision": {
+    "request": "虚构：大厅改名迎宾厅，网页手机端局部重排，PPT布局不动，本次不重出图片。",
+    "affected_bindings": [
+      "B01",
+      "B02",
+      "B03"
+    ],
+    "regenerate_scope": [
+      "O01",
+      "O02"
+    ],
+    "stale_deliverables": [
+      "O03"
+    ],
+    "user_approval": "not_a_real_approval"
+  },
+  "validation": {
+    "technical": "not_run",
+    "visual": "not_run",
+    "user_approval": "not_obtained",
+    "host_integration": "not_run"
+  }
+}

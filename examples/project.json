@@ -1,0 +1,79 @@
+{
+  "example_only": true,
+  "notice": "完全虚构的契约示例；没有真实文件、生成请求、渲染、检查或用户认可。",
+  "project": {
+    "project_id": "fictional-hotel",
+    "revision": 3,
+    "versions": { "asset": "a1", "content": "c1", "brand": "b1", "layout": "l1", "permission": "p1" },
+    "permissions": { "image_outpaint": true, "render_ppt": true },
+    "active_tasks": { "hero_image": "fictional-task-1" }
+  },
+  "task": {
+    "project_id": "fictional-hotel",
+    "task_id": "fictional-task-1",
+    "operation": "image_outpaint",
+    "output_slot": "hero_image",
+    "input_fingerprint": "fictional-input-not-a-real-hash",
+    "input_versions": { "asset": "a1", "content": "c1", "brand": "b1", "layout": "l1", "permission": "p1" },
+    "depends_on": ["asset", "content", "brand", "layout", "permission"],
+    "service_status": "pending",
+    "adoption_status": "pending",
+    "cancel_requested": false
+  },
+  "result": null,
+  "page_task": {
+    "project_id": "fictional-hotel",
+    "page_task_id": "space-explanation-1",
+    "medium": "ppt",
+    "task_tags": ["space_explanation"],
+    "text_density": "medium",
+    "image_shapes": ["landscape"],
+    "locked_elements": ["logo", "cover_layout"],
+    "require_editable": true
+  },
+  "cards": [
+    {
+      "card_id": "fictional-reasoning-card",
+      "scope": { "kind": "public" },
+      "source": { "source_id": "fictional-source", "locator": "fictional-page-1", "review_status": "observed" },
+      "media": ["ppt", "web"],
+      "task_tags": ["space_explanation"],
+      "text_densities": ["medium"],
+      "image_shapes": ["landscape"],
+      "requires_changes": [],
+      "editable_strategy": true,
+      "design_logic": "主图与解释文字分区，共用对齐轴；实际图幅和断行必须用项目内容验证。",
+      "rights": { "study": "allowed", "reproduce": "forbidden" }
+    },
+    {
+      "card_id": "fictional-other-project-card",
+      "scope": { "kind": "project", "project_id": "different-project" },
+      "source": { "source_id": "fictional-private-source", "locator": "fictional-page-2", "review_status": "observed" },
+      "media": ["ppt"],
+      "task_tags": ["space_explanation"],
+      "text_densities": ["medium"],
+      "image_shapes": ["landscape"],
+      "requires_changes": [],
+      "editable_strategy": true,
+      "design_logic": "本字段用于验证跨项目过滤，没有真实客户内容。",
+      "rights": { "study": "allowed", "reproduce": "licensed" }
+    }
+  ],
+  "artifact": {
+    "project_id": "fictional-hotel",
+    "artifact_id": "fictional-deck",
+    "version": "draft-001",
+    "format": "pptx",
+    "input_versions": { "asset": "a1", "content": "c1", "brand": "b1", "layout": "l1", "permission": "p1" },
+    "depends_on": ["asset", "content", "brand", "layout", "permission"],
+    "unit_ids": ["cover", "space-explanation-1"],
+    "exists": false,
+    "editable_required": true
+  },
+  "evidence": {
+    "render": { "status": "not_run" },
+    "technical": { "status": "not_run" },
+    "visual": { "status": "not_run" },
+    "user": { "status": "not_obtained" }
+  }
+}

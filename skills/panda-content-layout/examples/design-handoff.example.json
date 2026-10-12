@@ -1,0 +1,99 @@
+{
+  "schema_version": "0.5-example",
+  "example_only": true,
+  "warning": "虚构交接示例，不表示已调用模型、读取这些素材或完成产物。",
+  "project_id": "example-brand-hotel",
+  "task_id": "example-design-01",
+  "module": "page_art_direction",
+  "input_snapshot": {
+    "assets_version": "a003",
+    "content_version": "c002",
+    "brand_version": "b002",
+    "layout_version": "l001",
+    "permission_version": "p003"
+  },
+  "depends_on": [
+    "assets_version",
+    "content_version",
+    "brand_version",
+    "layout_version",
+    "permission_version"
+  ],
+  "request": {
+    "output": "ppt",
+    "page_task": "空间说明",
+    "asset_ids": [
+      "example-photo-01"
+    ],
+    "content_ids": [
+      "example-content-01"
+    ],
+    "reference_card_ids": [
+      "R00-P006"
+    ],
+    "brand_constraints": {
+      "mode": "optimize_within_brand",
+      "locked": [
+        "logo_source_and_aspect",
+        "title_cover_layout",
+        "footer"
+      ],
+      "editable": [
+        "body_grid",
+        "image_scale",
+        "body_line_breaks"
+      ]
+    },
+    "image_permissions": {
+      "crop": true,
+      "generative_changes": false
+    },
+    "rewrite_permission": "polish_without_changing_facts"
+  },
+  "result": {
+    "status": "illustration_only_not_executed",
+    "layout_reason": "保留品牌固定区，用共同对齐轴组织空间照片与说明；先检验现有照片是否具备可用文字区域。",
+    "observations": [],
+    "source_refs": [],
+    "unresolved": [
+      "实际素材与品牌规范未提供；不得按示例当作已读取"
+    ],
+    "artifact_paths": [],
+    "review": {
+      "technical": "not_run",
+      "visual": "not_run",
+      "user": "not_obtained"
+    }
+  },
+  "job_handling": {
+    "on_snapshot_mismatch": "mark_superseded_do_not_commit",
+    "on_timeout_after_submit": "query_original_job_or_supported_idempotency_key_before_resubmit",
+    "service_statuses": [
+      "pending",
+      "running",
+      "succeeded",
+      "failed",
+      "outcome_unknown",
+      "cancel_requested",
+      "canceled"
+    ],
+    "adoption_statuses": [
+      "eligible",
+      "superseded",
+      "withdrawn",
+      "committed"
+    ],
+    "on_permission_withdrawal": "stop_queue_and_retries_request_supported_cancel_reject_late_results"
+  },
+  "manual_revision": {
+    "on_reupload": "register_external_revision_compare_content_brand_layout_then_reconcile",
+    "overwrite_user_edits": false,
+    "mapping_basis": [
+      "stable_content_id",
+      "object_marker",
+      "text_fingerprint",
+      "image_fingerprint"
+    ],
+    "low_confidence": "review_affected_mapping_before_propagation"
+  }
+}

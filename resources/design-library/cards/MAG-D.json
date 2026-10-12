@@ -1,0 +1,33 @@
+{
+  "id": "MAG-D",
+  "title": "高彩度现场与黑白文字图形对置",
+  "card": "MAG-D.md",
+  "tags": [
+    "双区对置",
+    "彩色摄影",
+    "文字图形",
+    "重复",
+    "旋转",
+    "艺术空间"
+  ],
+  "text_role": "重复字作为图形，正文承担正常解释",
+  "negative_space": "右页白色边界与字块下方说明区",
+  "suitable_for": [
+    "艺术工作室",
+    "展览",
+    "章节开场"
+  ],
+  "ppt_adaptation": "按实际标题决定是否重复，图文区域可改比例",
+  "web_adaptation": "手机按语义堆叠，装饰重复不破坏可访问阅读顺序",
+  "avoid": [
+    "强制重复五行",
+    "倒置关键说明",
+    "复制蓝色展示背景",
+    "复制标识"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-D-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

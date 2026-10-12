@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-12",
+  "archived_sources": 13,
+  "archived_pages": 1074,
+  "original_pages_visually_reviewed": 20,
+  "original_sources_with_a_reviewed_page": 13,
+  "unique_magazine_images_reviewed": 11,
+  "reviewed_cards": 31,
+  "full_corpus_visually_reviewed": false,
+  "note": "原稿代表页20张；R00为主图提取与OOXML位置核对，不是PowerPoint合成渲染；其他代表页为PDF渲染。",
+  "sources": [
+    {
+      "id": "R00",
+      "title": "参考原稿 R00",
+      "pages": 104,
+      "asset_id": "R00-original",
+      "reviewed_physical_pages": [
+        6,
+        57,
+        62,
+        85
+      ]
+    },
+    {
+      "id": "R01",
+      "title": "参考原稿 R01",
+      "pages": 95,
+      "asset_id": "R01-original",
+      "reviewed_physical_pages": [
+        15,
+        16
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "参考原稿 R02",
+      "pages": 47,
+      "asset_id": "R02-original",
+      "reviewed_physical_pages": [
+        23
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "参考原稿 R03",
+      "pages": 30,
+      "asset_id": "R03-original",
+      "reviewed_physical_pages": [
+        4,
+        5
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "参考原稿 R04",
+      "pages": 37,
+      "asset_id": "R04-original",
+      "reviewed_physical_pages": [
+        6
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "参考原稿 R05",
+      "pages": 84,
+      "asset_id": "R05-original",
+      "reviewed_physical_pages": [
+        2
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "参考原稿 R06",
+      "pages": 58,
+      "asset_id": "R06-original",
+      "reviewed_physical_pages": [
+        9,
+        20
+      ]
+    },
+    {
+      "id": "R07",
+      "title": "参考原稿 R07",
+      "pages": 126,
+      "asset_id": "R07-original",
+      "reviewed_physical_pages": [
+        31
+      ]
+    },
+    {
+      "id": "R08",
+      "title": "参考原稿 R08",
+      "pages": 54,
+      "asset_id": "R08-original",
+      "reviewed_physical_pages": [
+        25
+      ]
+    },
+    {
+      "id": "R09",
+      "title": "参考原稿 R09",
+      "pages": 75,
+      "asset_id": "R09-original",
+      "reviewed_physical_pages": [
+        8
+      ]
+    },
+    {
+      "id": "R10",
+      "title": "参考原稿 R10",
+      "pages": 123,
+      "asset_id": "R10-original",
+      "reviewed_physical_pages": [
+        20
+      ]
+    },
+    {
+      "id": "R11",
+      "title": "参考原稿 R11",
+      "pages": 169,
+      "asset_id": "R11-original",
+      "reviewed_physical_pages": [
+        55
+      ]
+    },
+    {
+      "id": "R12",
+      "title": "参考原稿 R12",
+      "pages": 72,
+      "asset_id": "R12-original",
+      "reviewed_physical_pages": [
+        18,
+        20
+      ]
+    }
+  ]
+}

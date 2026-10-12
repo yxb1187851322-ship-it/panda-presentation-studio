@@ -1,0 +1,35 @@
+{
+  "id": "MAG-C",
+  "title": "局部图像与有方向的纸面留白",
+  "card": "MAG-C.md",
+  "tags": [
+    "材质",
+    "静物",
+    "局部图",
+    "纸面留白",
+    "图注",
+    "观看节奏",
+    "证据不完整"
+  ],
+  "text_role": "情境词与对象图注分工",
+  "negative_space": "集中在局部图上方及图注之间的纸面",
+  "suitable_for": [
+    "材质细节",
+    "器物",
+    "家具工艺",
+    "全景后的阅读停顿"
+  ],
+  "ppt_adaptation": "使用真实图注归属与清晰对齐，纸刊小字按观看距离调整",
+  "web_adaptation": "图片图注相邻，保留停顿而减少无意义空滑",
+  "avoid": [
+    "从局部反推整套网格",
+    "复制叠页暗边",
+    "猜期号字体",
+    "照搬微型小字"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-C-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

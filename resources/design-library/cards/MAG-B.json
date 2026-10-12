@@ -1,0 +1,32 @@
+{
+  "id": "MAG-B",
+  "title": "建筑水平轴与轻量角落标注",
+  "card": "MAG-B.md",
+  "tags": [
+    "建筑",
+    "全景",
+    "水平轴线",
+    "角落文字",
+    "图像优先",
+    "空间完整"
+  ],
+  "text_role": "两端边缘识别标注",
+  "negative_space": "照片内天空与前景地面；不包括书外灰背景",
+  "suitable_for": [
+    "建筑外观",
+    "空间总览",
+    "项目章节主图"
+  ],
+  "ppt_adaptation": "保留几何轴线，长说明另页，短标注独立编辑",
+  "web_adaptation": "手机保留完整宽图并配图下信息，细节另设查看路径",
+  "avoid": [
+    "模拟书脊阴影",
+    "拉伸建筑",
+    "竖屏静默丢失建筑两端"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-B-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

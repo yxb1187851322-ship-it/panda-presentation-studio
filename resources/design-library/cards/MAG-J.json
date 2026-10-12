@@ -1,0 +1,34 @@
+{
+  "id": "MAG-J",
+  "title": "巨型文字背景与主体前置穿插",
+  "card": "MAG-J.md",
+  "tags": [
+    "强宣传",
+    "巨字",
+    "文字图形",
+    "前后遮挡",
+    "主体轮廓",
+    "动作对角线"
+  ],
+  "text_role": "标题成为主要背景形状，主体局部遮挡",
+  "negative_space": "红色边缘与字内间隔，没有传统大留白",
+  "suitable_for": [
+    "宣传主视觉",
+    "发布活动",
+    "展览",
+    "短主题开场"
+  ],
+  "ppt_adaptation": "在授权分层素材条件下保留前后关系，中文重算遮挡和字数",
+  "web_adaptation": "真实语义标题与视觉拆行分开考虑，验证各屏宽遮挡状态",
+  "avoid": [
+    "强制红黄",
+    "复制电影资产",
+    "压缩字形模拟",
+    "遮挡项目事实"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-J-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

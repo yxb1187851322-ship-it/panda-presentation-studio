@@ -36,7 +36,7 @@ node scripts/local-library.mjs status
 |---|---|
 | `skills/` | 专业规则与按需参考，当前规则主版本 |
 | `resources/design-library/` | 来源页码、视觉观察、设计推导、适用与反例、阅读范围 |
-| `resources/sources/` | 资料包及外部工具来源记录，不包含原稿截图或工具大包 |
+| `resources/sources/` | 外部工具来源与本地清单格式；实际原件清单只保存在忽略的 local 目录 |
 | `src/core/` | 可测试的任务采用、参考候选与交付检查规则 |
 | `docs/` | 产品事实、流程、接口、阶段验收 |
 | `prototype/` | 可点击的界面示意，不连接生产服务 |

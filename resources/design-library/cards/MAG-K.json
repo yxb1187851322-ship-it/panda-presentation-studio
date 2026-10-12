@@ -1,0 +1,33 @@
+{
+  "id": "MAG-K",
+  "title": "中心符号统摄多尺度叙事拼贴",
+  "card": "MAG-K.md",
+  "tags": [
+    "概念拼贴",
+    "中心符号",
+    "多尺度",
+    "垂直中轴",
+    "密集叙事",
+    "概念边界"
+  ],
+  "text_role": "中心符号统摄复杂叙事，数字碎片为画面内容",
+  "negative_space": "很少净空，由暗边和局部间隔缓冲",
+  "suitable_for": [
+    "明确授权的概念叙事",
+    "文化艺术主视觉",
+    "多层探索内容"
+  ],
+  "ppt_adaptation": "拆成主题、主视觉与细节多页，明确概念拼贴性质",
+  "web_adaptation": "分章节展开，保留核心主题的正常阅读路径",
+  "avoid": [
+    "把真实建筑拼成虚构空间",
+    "无主线堆图",
+    "缩成手机海报",
+    "混同黑白风格"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-K-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

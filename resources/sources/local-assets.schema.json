@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Panda private local asset registry",
+  "description": "Only the format is public. Store actual filenames, paths and fingerprints in ignored local/assets.local.json.",
+  "type": "object",
+  "required": ["schema_version", "assets"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "relative_path", "bytes", "sha256", "role", "storage"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "relative_path": {"type": "string", "description": "Path relative to the private archive root; absolute paths and traversal are rejected by the local reader."},
+          "bytes": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "role": {"type": "string"},
+          "storage": {"const": "local_archive"}
+        }
+      }
+    }
+  }
+}

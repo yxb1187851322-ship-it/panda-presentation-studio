@@ -1,0 +1,1109 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-10-12",
+  "cards": [
+    {
+      "id": "R00-P006",
+      "title": "文字说明与双图对照分区",
+      "source_id": "R00",
+      "source_page": 6,
+      "task_tags": [
+        "能力解释",
+        "方法对照",
+        "图文主次"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "流程前后比较",
+        "原始输入与概念输出说明",
+        "有明确共同主题的两幅参考"
+      ],
+      "avoid": [
+        "五个以上独立观点",
+        "需要详读标注的CAD图",
+        "没有证据的速度或效果承诺"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R00-P006.json",
+      "preview_ref": "R00-P006-preview"
+    },
+    {
+      "id": "R00-P057",
+      "title": "用字号与对角留白组织章节开场",
+      "source_id": "R00",
+      "source_page": 57,
+      "task_tags": [
+        "章节过渡",
+        "场景引入",
+        "文字层级"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "章节开始",
+        "单一用户场景",
+        "汇报中需要放慢节奏的一页"
+      ],
+      "avoid": [
+        "详细需求清单",
+        "比较多个同等重要方案",
+        "每页都重复的正文模板"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R00-P057.json",
+      "preview_ref": "R00-P057-preview"
+    },
+    {
+      "id": "R00-P062",
+      "title": "基准图与四个变体共页比较",
+      "source_id": "R00",
+      "source_page": 62,
+      "task_tags": [
+        "方案演变",
+        "多方案比较",
+        "基准与变体"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "2至4个空间方向比较",
+        "材质或家具变体",
+        "视觉实验记录"
+      ],
+      "avoid": [
+        "严谨技术比对但机位不同",
+        "各图都需长解释",
+        "把意向图直接当已实施成果"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R00-P062.json",
+      "preview_ref": "R00-P062-preview"
+    },
+    {
+      "id": "R00-P085",
+      "title": "中心空间图与外围单品建立落位关系",
+      "source_id": "R00",
+      "source_page": 85,
+      "task_tags": [
+        "单品替换",
+        "软装落位",
+        "图解说明"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "软装替换说明",
+        "有限数量单品落位",
+        "局部修改清单"
+      ],
+      "avoid": [
+        "精确安装图",
+        "大规模采购清单",
+        "未核对尺寸的适配承诺"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R00-P085.json",
+      "preview_ref": "R00-P085-preview"
+    },
+    {
+      "id": "R01-P015",
+      "title": "编号底纹、概念词与双图共同建立主题",
+      "source_id": "R01",
+      "source_page": 15,
+      "task_tags": [
+        "概念主题",
+        "图文校准",
+        "章节编号"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "已确定概念的解释页",
+        "风格关键词与细节证据",
+        "杂志主题开篇"
+      ],
+      "avoid": [
+        "无图像依据的抽象概念",
+        "技术指标页",
+        "将名人或品牌视觉当自有案例"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R01-P015.json",
+      "preview_ref": "R01-P015-preview"
+    },
+    {
+      "id": "R01-P016",
+      "title": "标题横线接入连续材质细节图带",
+      "source_id": "R01",
+      "source_page": 16,
+      "task_tags": [
+        "材质细节",
+        "触感表达",
+        "横向图带"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "细节意向",
+        "工艺质感说明",
+        "从空间全景转入局部的过渡"
+      ],
+      "avoid": [
+        "独立采购表",
+        "缺尺寸的安装依据",
+        "要求看完整空间的页"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R01-P016.json",
+      "preview_ref": "R01-P016-preview"
+    },
+    {
+      "id": "R06-P009",
+      "title": "中心高图与两侧阶梯图组串联意象",
+      "source_id": "R06",
+      "source_page": 9,
+      "task_tags": [
+        "意象建立",
+        "轻文字",
+        "中心主次"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "概念意象板",
+        "材料光泽与形态关系",
+        "故事章节前的氛围引入"
+      ],
+      "avoid": [
+        "精确方案选择",
+        "施工说明",
+        "没有来源却编造在地传说"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R06-P009.json",
+      "preview_ref": "R06-P009-preview"
+    },
+    {
+      "id": "R06-P020",
+      "title": "等权图带把五条原则对应到视觉证据",
+      "source_id": "R06",
+      "source_page": 20,
+      "task_tags": [
+        "设计原则",
+        "关键词证据",
+        "等权比较"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "3至5个并列原则",
+        "视觉语言总结",
+        "材料或光线特征清单"
+      ],
+      "avoid": [
+        "原则有明显主次却强行均分",
+        "长篇论证",
+        "用词无法从图中得到支持"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R06-P020.json",
+      "preview_ref": "R06-P020-preview"
+    },
+    {
+      "id": "R03-P004",
+      "title": "横向页面中保护纵向平面整体形状",
+      "source_id": "R03",
+      "source_page": 4,
+      "task_tags": [
+        "平面总览",
+        "几何保护",
+        "低干扰说明"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "平面总体介绍",
+        "空间关系总览",
+        "进入局部设计前的定位"
+      ],
+      "avoid": [
+        "直接施工或尺寸审核",
+        "需要观众远距离读全标注",
+        "缺单位时据图算面积"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R03-P004.json",
+      "preview_ref": "R03-P004-preview"
+    },
+    {
+      "id": "R03-P005",
+      "title": "材料拼板以内嵌编码表达用途关系",
+      "source_id": "R03",
+      "source_page": 5,
+      "task_tags": [
+        "材料板",
+        "色彩关系",
+        "编号与用途"
+      ],
+      "media_tags": [
+        "ppt",
+        "images"
+      ],
+      "suitable_for": [
+        "材质搭配讨论",
+        "主辅色和光泽关系",
+        "材料方向初步沟通"
+      ],
+      "avoid": [
+        "直接替代采购规格",
+        "仅凭照片判断精确色差",
+        "未核验材质就标注性能"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R03-P005.json",
+      "preview_ref": "R03-P005-preview"
+    },
+    {
+      "id": "R12-P018",
+      "title": "平面底图叠加编号点位与双类路线",
+      "source_id": "R12",
+      "source_page": 18,
+      "task_tags": [
+        "流线分析",
+        "点位编号",
+        "图例质量"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "点位和流线讲解",
+        "软装重点位置导航",
+        "空间顺序总览"
+      ],
+      "avoid": [
+        "复制缺字图例",
+        "没有明确图例就解释颜色含义",
+        "仅据本页读取精确尺寸"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R12-P018.json",
+      "preview_ref": "R12-P018-preview"
+    },
+    {
+      "id": "R12-P020",
+      "title": "局部平面点位与灯具双视图同页对应",
+      "source_id": "R12",
+      "source_page": 20,
+      "task_tags": [
+        "软装选型",
+        "位置与单品",
+        "图注对应"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "单品选型沟通",
+        "灯具/家具与点位对应",
+        "对接总平面的详情页"
+      ],
+      "avoid": [
+        "仅凭图像确定尺寸适配",
+        "直接套用源品牌或年份",
+        "保留副标题缺字"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R12-P020.json",
+      "preview_ref": "R12-P020-preview"
+    },
+    {
+      "id": "R02-P023",
+      "title": "材料近景与空间主图建立对应说明",
+      "source_id": "R02",
+      "source_page": 23,
+      "task_tags": [
+        "材料概念",
+        "空间与细节",
+        "深底层级"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "有空间应用证据的材料说明",
+        "少量主材与光线的组合",
+        "概念到空间的过渡页"
+      ],
+      "avoid": [
+        "把近景当真实规格",
+        "多个空间与许多材料全部塞入同一页",
+        "黑底低对比小字直接继承"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R02-P023.json",
+      "preview_ref": "R02-P023-preview"
+    },
+    {
+      "id": "R04-P006",
+      "title": "统一高度的五段图带对应空间性格词",
+      "source_id": "R04",
+      "source_page": 6,
+      "task_tags": [
+        "概念图带",
+        "轻文字",
+        "并列特征"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "3至5项空间性格",
+        "设计意向总览",
+        "图像质量足够统一的章节"
+      ],
+      "avoid": [
+        "需要详读的图纸或尺寸",
+        "按五等分强行拼凑不足的素材",
+        "保留在目标观看距离不可读的灰色小词"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R04-P006.json",
+      "preview_ref": "R04-P006-preview"
+    },
+    {
+      "id": "R05-P002",
+      "title": "目录以项目决策阶段组织整册顺序",
+      "source_id": "R05",
+      "source_page": 2,
+      "task_tags": [
+        "内容结构",
+        "阶段推进",
+        "目录"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "多阶段设计方案",
+        "需要对齐汇报范围的客户会议",
+        "跨专业文档导航"
+      ],
+      "avoid": [
+        "直接套用原客户画像",
+        "没确认却写成已确认",
+        "为了完整目录虚构缺失章节"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R05-P002.json",
+      "preview_ref": "R05-P002-preview"
+    },
+    {
+      "id": "R07-P031",
+      "title": "空间主图内编号与右侧材料样本一一对应",
+      "source_id": "R07",
+      "source_page": 31,
+      "task_tags": [
+        "材料编号",
+        "效果图说明",
+        "落位索引"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "少量主要材质的空间说明",
+        "入口/墙面/顶面选材讨论",
+        "单空间局部修改"
+      ],
+      "avoid": [
+        "把参考色样当采购型号",
+        "按相似颜色猜材料",
+        "编号压住关键构造或与侧栏失配"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R07-P031.json",
+      "preview_ref": "R07-P031-preview"
+    },
+    {
+      "id": "R08-P025",
+      "title": "空间全景与顶部细节建立两个观察尺度",
+      "source_id": "R08",
+      "source_page": 25,
+      "task_tags": [
+        "主副图",
+        "观察尺度",
+        "少文字空间页"
+      ],
+      "media_tags": [
+        "ppt",
+        "images"
+      ],
+      "suitable_for": [
+        "单空间展示",
+        "全景加工艺或材质细节",
+        "少量文字的汇报节奏页"
+      ],
+      "avoid": [
+        "副图没有补充信息",
+        "借裁切掩盖真实方案问题",
+        "照搬深绿色为所有品牌默认色"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R08-P025.json",
+      "preview_ref": "R08-P025-preview"
+    },
+    {
+      "id": "R09-P008",
+      "title": "总平面与外部入口流线共用一张底图",
+      "source_id": "R09",
+      "source_page": 8,
+      "task_tags": [
+        "平面总览",
+        "入口流线",
+        "技术图保护"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "项目总览",
+        "入口与室内外关系讲解",
+        "流线分析前的定位"
+      ],
+      "avoid": [
+        "为铺满16:9而拉伸",
+        "删除周边关系只留建筑以致误解入口",
+        "把截图作为精确测量依据"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R09-P008.json",
+      "preview_ref": "R09-P008-preview"
+    },
+    {
+      "id": "R10-P020",
+      "title": "分层空间图把概念元素对应到楼层位置",
+      "source_id": "R10",
+      "source_page": 20,
+      "task_tags": [
+        "概念到空间",
+        "楼层对应",
+        "复杂关系拆解"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "已有空间方案的主题解释",
+        "多楼层关系总览",
+        "概念元素的落位检查"
+      ],
+      "avoid": [
+        "从意象倒推虚构空间",
+        "把倾斜示意当真实施工尺寸",
+        "为了艺术感擅自位移楼层或改变几何"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R10-P020.json",
+      "preview_ref": "R10-P020-preview"
+    },
+    {
+      "id": "R11-P055",
+      "title": "空间情境图与独立家具组成同一系列",
+      "source_id": "R11",
+      "source_page": 55,
+      "task_tags": [
+        "家具系列",
+        "情境与单品",
+        "软装体系"
+      ],
+      "media_tags": [
+        "ppt",
+        "web"
+      ],
+      "suitable_for": [
+        "软装系列初步提案",
+        "家具材质与轮廓协调",
+        "选型前的方向讨论"
+      ],
+      "avoid": [
+        "未知尺寸却宣称比例真实",
+        "把系列板直接当采购清单",
+        "把参考海景当当前项目实景"
+      ],
+      "review_status": "actual_preview_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/R11-P055.json",
+      "preview_ref": "R11-P055-preview"
+    },
+    {
+      "id": "MAG-A",
+      "title": "人物投影与底边分置标题",
+      "source_id": "MAG-A",
+      "source_page": null,
+      "task_tags": [
+        "人物",
+        "投影",
+        "满版跨页",
+        "底边对齐",
+        "非对称平衡",
+        "章节扉页"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "人物访谈扉页",
+        "设计师介绍",
+        "主体集中一侧的空间主图"
+      ],
+      "avoid": [
+        "伪造投影",
+        "复制姓名署名",
+        "固定暖棕配色",
+        "将外部白框当版心"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-A.json",
+      "preview_ref": "MAG-A-preview"
+    },
+    {
+      "id": "MAG-B",
+      "title": "建筑水平轴与轻量角落标注",
+      "source_id": "MAG-B",
+      "source_page": null,
+      "task_tags": [
+        "建筑",
+        "全景",
+        "水平轴线",
+        "角落文字",
+        "图像优先",
+        "空间完整"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "建筑外观",
+        "空间总览",
+        "项目章节主图"
+      ],
+      "avoid": [
+        "模拟书脊阴影",
+        "拉伸建筑",
+        "竖屏静默丢失建筑两端"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-B.json",
+      "preview_ref": "MAG-B-preview"
+    },
+    {
+      "id": "MAG-C",
+      "title": "局部图像与有方向的纸面留白",
+      "source_id": "MAG-C",
+      "source_page": null,
+      "task_tags": [
+        "材质",
+        "静物",
+        "局部图",
+        "纸面留白",
+        "图注",
+        "观看节奏",
+        "证据不完整"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "材质细节",
+        "器物",
+        "家具工艺",
+        "全景后的阅读停顿"
+      ],
+      "avoid": [
+        "从局部反推整套网格",
+        "复制叠页暗边",
+        "猜期号字体",
+        "照搬微型小字"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-C.json",
+      "preview_ref": "MAG-C-preview"
+    },
+    {
+      "id": "MAG-D",
+      "title": "高彩度现场与黑白文字图形对置",
+      "source_id": "MAG-D",
+      "source_page": null,
+      "task_tags": [
+        "双区对置",
+        "彩色摄影",
+        "文字图形",
+        "重复",
+        "旋转",
+        "艺术空间"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "艺术工作室",
+        "展览",
+        "章节开场"
+      ],
+      "avoid": [
+        "强制重复五行",
+        "倒置关键说明",
+        "复制蓝色展示背景",
+        "复制标识"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-D.json",
+      "preview_ref": "MAG-D-preview"
+    },
+    {
+      "id": "MAG-E",
+      "title": "独立刊头与室内摄影纵向分层",
+      "source_id": "MAG-E",
+      "source_page": null,
+      "task_tags": [
+        "封面",
+        "刊头",
+        "室内",
+        "上下分区",
+        "摄影留白",
+        "纵向阅读"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "酒店专题",
+        "住宅与会所封面",
+        "单项目介绍"
+      ],
+      "avoid": [
+        "复制刊号条码",
+        "默认米色背景",
+        "将多行小字压在复杂地面上"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-E.json",
+      "preview_ref": "MAG-E-preview"
+    },
+    {
+      "id": "MAG-F",
+      "title": "清晰度层次与安静标题带",
+      "source_id": "MAG-F",
+      "source_page": null,
+      "task_tags": [
+        "人物关系",
+        "前后景",
+        "虚实",
+        "光带",
+        "情绪",
+        "多主体"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "人物群像",
+        "生活叙事",
+        "有原生层次的空间照片"
+      ],
+      "avoid": [
+        "自动加光晕滤镜",
+        "复制奖项影评",
+        "由成品反推真实摄影工序",
+        "虚构人物关系"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-F.json",
+      "preview_ref": "MAG-F-preview"
+    },
+    {
+      "id": "MAG-G",
+      "title": "复杂反射中的中心识别与边缘秩序",
+      "source_id": "MAG-G",
+      "source_page": null,
+      "task_tags": [
+        "玻璃反射",
+        "夜景",
+        "人物",
+        "中心标识",
+        "边缘索引",
+        "复杂画面"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "城市夜景",
+        "玻璃空间",
+        "音乐人物专题"
+      ],
+      "avoid": [
+        "复制品牌标识",
+        "随意双重曝光",
+        "中心遮住建筑构造",
+        "低对比小字"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-G.json",
+      "preview_ref": "MAG-G-preview"
+    },
+    {
+      "id": "MAG-H",
+      "title": "大色域背景与完整姿态的少层级封面",
+      "source_id": "MAG-H",
+      "source_page": null,
+      "task_tags": [
+        "高饱和",
+        "人物全身",
+        "大刊头",
+        "少层级",
+        "色域对比",
+        "姿态保护"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "人物封面",
+        "设计师专题",
+        "高彩度艺术物件"
+      ],
+      "avoid": [
+        "固定蓝红配色",
+        "强裁姿态",
+        "复制明星与刊名",
+        "擅自抠图改建筑"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-H.json",
+      "preview_ref": "MAG-H-preview"
+    },
+    {
+      "id": "MAG-I",
+      "title": "偏置静物与有重量的彩色留白",
+      "source_id": "MAG-I",
+      "source_page": null,
+      "task_tags": [
+        "静物",
+        "家具",
+        "花艺",
+        "偏置图幅",
+        "彩色留白",
+        "非对称平衡"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "家具",
+        "灯具",
+        "花艺",
+        "酒瓶",
+        "艺术品细节"
+      ],
+      "avoid": [
+        "固定正红",
+        "复制外部黑背景",
+        "擅自改物件颜色",
+        "填满所有空区"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-I.json",
+      "preview_ref": "MAG-I-preview"
+    },
+    {
+      "id": "MAG-J",
+      "title": "巨型文字背景与主体前置穿插",
+      "source_id": "MAG-J",
+      "source_page": null,
+      "task_tags": [
+        "强宣传",
+        "巨字",
+        "文字图形",
+        "前后遮挡",
+        "主体轮廓",
+        "动作对角线"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "宣传主视觉",
+        "发布活动",
+        "展览",
+        "短主题开场"
+      ],
+      "avoid": [
+        "强制红黄",
+        "复制电影资产",
+        "压缩字形模拟",
+        "遮挡项目事实"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-J.json",
+      "preview_ref": "MAG-J-preview"
+    },
+    {
+      "id": "MAG-K",
+      "title": "中心符号统摄多尺度叙事拼贴",
+      "source_id": "MAG-K",
+      "source_page": null,
+      "task_tags": [
+        "概念拼贴",
+        "中心符号",
+        "多尺度",
+        "垂直中轴",
+        "密集叙事",
+        "概念边界"
+      ],
+      "media_tags": [
+        "ppt",
+        "web",
+        "images"
+      ],
+      "suitable_for": [
+        "明确授权的概念叙事",
+        "文化艺术主视觉",
+        "多层探索内容"
+      ],
+      "avoid": [
+        "把真实建筑拼成虚构空间",
+        "无主线堆图",
+        "缩成手机海报",
+        "混同黑白风格"
+      ],
+      "review_status": "actual_image_viewed",
+      "rights": "research_reference_only_reuse_not_verified",
+      "card_path": "resources/design-library/cards/MAG-K.json",
+      "preview_ref": "MAG-K-preview"
+    }
+  ],
+  "coverage": {
+    "date": "2026-10-12",
+    "archived_sources": 13,
+    "archived_pages": 1074,
+    "original_pages_visually_reviewed": 20,
+    "original_sources_with_a_reviewed_page": 13,
+    "unique_magazine_images_reviewed": 11,
+    "reviewed_cards": 31,
+    "full_corpus_visually_reviewed": false,
+    "note": "原稿代表页20张；R00为主图提取与OOXML位置核对，不是PowerPoint合成渲染；其他代表页为PDF渲染。",
+    "sources": [
+      {
+        "id": "R00",
+        "title": "参考原稿 R00",
+        "pages": 104,
+        "asset_id": "R00-original",
+        "reviewed_physical_pages": [
+          6,
+          57,
+          62,
+          85
+        ]
+      },
+      {
+        "id": "R01",
+        "title": "参考原稿 R01",
+        "pages": 95,
+        "asset_id": "R01-original",
+        "reviewed_physical_pages": [
+          15,
+          16
+        ]
+      },
+      {
+        "id": "R02",
+        "title": "参考原稿 R02",
+        "pages": 47,
+        "asset_id": "R02-original",
+        "reviewed_physical_pages": [
+          23
+        ]
+      },
+      {
+        "id": "R03",
+        "title": "参考原稿 R03",
+        "pages": 30,
+        "asset_id": "R03-original",
+        "reviewed_physical_pages": [
+          4,
+          5
+        ]
+      },
+      {
+        "id": "R04",
+        "title": "参考原稿 R04",
+        "pages": 37,
+        "asset_id": "R04-original",
+        "reviewed_physical_pages": [
+          6
+        ]
+      },
+      {
+        "id": "R05",
+        "title": "参考原稿 R05",
+        "pages": 84,
+        "asset_id": "R05-original",
+        "reviewed_physical_pages": [
+          2
+        ]
+      },
+      {
+        "id": "R06",
+        "title": "参考原稿 R06",
+        "pages": 58,
+        "asset_id": "R06-original",
+        "reviewed_physical_pages": [
+          9,
+          20
+        ]
+      },
+      {
+        "id": "R07",
+        "title": "参考原稿 R07",
+        "pages": 126,
+        "asset_id": "R07-original",
+        "reviewed_physical_pages": [
+          31
+        ]
+      },
+      {
+        "id": "R08",
+        "title": "参考原稿 R08",
+        "pages": 54,
+        "asset_id": "R08-original",
+        "reviewed_physical_pages": [
+          25
+        ]
+      },
+      {
+        "id": "R09",
+        "title": "参考原稿 R09",
+        "pages": 75,
+        "asset_id": "R09-original",
+        "reviewed_physical_pages": [
+          8
+        ]
+      },
+      {
+        "id": "R10",
+        "title": "参考原稿 R10",
+        "pages": 123,
+        "asset_id": "R10-original",
+        "reviewed_physical_pages": [
+          20
+        ]
+      },
+      {
+        "id": "R11",
+        "title": "参考原稿 R11",
+        "pages": 169,
+        "asset_id": "R11-original",
+        "reviewed_physical_pages": [
+          55
+        ]
+      },
+      {
+        "id": "R12",
+        "title": "参考原稿 R12",
+        "pages": 72,
+        "asset_id": "R12-original",
+        "reviewed_physical_pages": [
+          18,
+          20
+        ]
+      }
+    ]
+  }
+}

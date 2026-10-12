@@ -1,0 +1,33 @@
+{
+  "id": "MAG-A",
+  "title": "人物投影与底边分置标题",
+  "card": "MAG-A.md",
+  "tags": [
+    "人物",
+    "投影",
+    "满版跨页",
+    "底边对齐",
+    "非对称平衡",
+    "章节扉页"
+  ],
+  "text_role": "大标题沿底边建立横向秩序，小署名退居角落",
+  "negative_space": "照片内左侧渐暗的低信息区",
+  "suitable_for": [
+    "人物访谈扉页",
+    "设计师介绍",
+    "主体集中一侧的空间主图"
+  ],
+  "ppt_adaptation": "保全主体与投影，标题原生可编辑，按中文语义重新拆行",
+  "web_adaptation": "手机将左右标题改为连续可读的单侧或图下标题",
+  "avoid": [
+    "伪造投影",
+    "复制姓名署名",
+    "固定暖棕配色",
+    "将外部白框当版心"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-A-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

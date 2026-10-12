@@ -1,0 +1,33 @@
+{
+  "id": "MAG-G",
+  "title": "复杂反射中的中心识别与边缘秩序",
+  "card": "MAG-G.md",
+  "tags": [
+    "玻璃反射",
+    "夜景",
+    "人物",
+    "中心标识",
+    "边缘索引",
+    "复杂画面"
+  ],
+  "text_role": "中心识别锚点加边缘目录与出版信息",
+  "negative_space": "有限暗部，主要依靠对比与边缘秩序",
+  "suitable_for": [
+    "城市夜景",
+    "玻璃空间",
+    "音乐人物专题"
+  ],
+  "ppt_adaptation": "检查暗部与投影可读性，中心文字不可遮关键事实",
+  "web_adaptation": "目录变为真实可读结构，中心短标题可移到图外",
+  "avoid": [
+    "复制品牌标识",
+    "随意双重曝光",
+    "中心遮住建筑构造",
+    "低对比小字"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-G-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

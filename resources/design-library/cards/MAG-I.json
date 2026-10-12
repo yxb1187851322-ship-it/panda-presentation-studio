@@ -1,0 +1,35 @@
+{
+  "id": "MAG-I",
+  "title": "偏置静物与有重量的彩色留白",
+  "card": "MAG-I.md",
+  "tags": [
+    "静物",
+    "家具",
+    "花艺",
+    "偏置图幅",
+    "彩色留白",
+    "非对称平衡"
+  ],
+  "text_role": "图外识别与图注，避免侵入物件",
+  "negative_space": "左侧有视觉重量的红色空区",
+  "suitable_for": [
+    "家具",
+    "灯具",
+    "花艺",
+    "酒瓶",
+    "艺术品细节"
+  ],
+  "ppt_adaptation": "独立照片偏置，标题说明与图片分别可编辑",
+  "web_adaptation": "手机按阅读顺序展开，调整色彩空区体量",
+  "avoid": [
+    "固定正红",
+    "复制外部黑背景",
+    "擅自改物件颜色",
+    "填满所有空区"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-I-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

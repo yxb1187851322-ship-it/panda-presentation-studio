@@ -1,0 +1,10 @@
+{
+  "name": "panda-presentation-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Panda presentation orchestration contracts; no generation service included",
+  "engines": { "node": ">=22" },
+  "exports": { ".": "./src/core/index.mjs" },
+  "scripts": { "test": "node --test test/core.test.mjs" }
+}

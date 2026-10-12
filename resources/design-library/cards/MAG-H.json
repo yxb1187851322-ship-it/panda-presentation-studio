@@ -1,0 +1,33 @@
+{
+  "id": "MAG-H",
+  "title": "大色域背景与完整姿态的少层级封面",
+  "card": "MAG-H.md",
+  "tags": [
+    "高饱和",
+    "人物全身",
+    "大刊头",
+    "少层级",
+    "色域对比",
+    "姿态保护"
+  ],
+  "text_role": "巨大识别标题、次级姓名及轻量口号",
+  "negative_space": "人物周围的大面积蓝色背景",
+  "suitable_for": [
+    "人物封面",
+    "设计师专题",
+    "高彩度艺术物件"
+  ],
+  "ppt_adaptation": "横屏重设主体与标题分区，保护手脚与轮廓",
+  "web_adaptation": "竖屏可保全主体，不同宽度检查标题位置与断行",
+  "avoid": [
+    "固定蓝红配色",
+    "强裁姿态",
+    "复制明星与刊名",
+    "擅自抠图改建筑"
+  ],
+  "review_status": "viewed",
+  "preview_ref": "MAG-H-preview",
+  "inspection_date": "2026-10-11",
+  "rights": "research_reference_only_reuse_not_verified",
+  "raw_external_source_page_read": false
+}

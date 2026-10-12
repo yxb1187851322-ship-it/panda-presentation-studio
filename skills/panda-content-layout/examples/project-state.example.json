@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.4-example",
+  "purpose": "结构示例，不是真实项目或确认记录",
+  "project_id": "example-project",
+  "stage": "intake",
+  "content_version": "c001",
+  "visual_version": null,
+  "requested_outputs": ["ppt", "web"],
+  "copy_permission": "faithful_organization",
+  "coverage_scope": "not_yet_determined",
+  "assets": [],
+  "content_units": [],
+  "capabilities": {
+    "cad_structure_read": "not_verified",
+    "cad_render": "not_verified",
+    "ppt_native_write": "not_verified",
+    "ppt_render": "not_verified",
+    "ppt_to_pdf": "not_verified",
+    "web_render": "not_verified",
+    "image_export": "not_verified"
+  },
+  "decisions": [],
+  "open_questions": [],
+  "output_bindings": [],
+  "deliverables": [],
+  "validation": {
+    "technical": "not_run",
+    "visual": "not_run",
+    "user_approval": "not_obtained",
+    "host_integration": "not_run"
+  }
+}
