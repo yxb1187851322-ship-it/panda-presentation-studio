@@ -1,9 +1,10 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomUUID, randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createContentWorkflow, applyContentWorkflow, inspectContentWorkflow } from '../core/content-workflow.mjs';
+import { resolveConversationAction } from '../ai/conversation.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const ID = /^[a-zA-Z0-9-]{1,80}$/;
@@ -18,7 +19,18 @@ const str = (v, max, fallback = '') => {
   if (typeof v !== 'string' || v.length > max) throw error(400, `文字需要在 ${max} 字以内`);
   return v.trim();
 };
-const uid = value => { if (!ID.test(value)) throw error(400, '项目或资料编号无效'); return value; };
+const uid = value => { if (typeof value !== 'string' || !ID.test(value)) throw error(400, '项目或资料编号无效'); return value; };
+async function replaceLocalFile(temporary,destination) {
+  // Windows readers can briefly hold a replace target during polling. Retry only
+  // this local atomic rename; never a provider call or paid orchestration step.
+  for (let attempt=0;;attempt++) {
+    try {await fs.rename(temporary,destination);return;}
+    catch (e) {
+      if (process.platform !== 'win32' || !['EPERM','EBUSY','EACCES'].includes(e.code) || attempt >= 6) throw e;
+      await new Promise(resolve => setTimeout(resolve,10 * (attempt+1)));
+    }
+  }
+}
 
 async function jsonBody(req) {
   if (!String(req.headers['content-type'] || '').startsWith('application/json')) throw error(415, '请求需要 JSON 内容');
@@ -56,6 +68,7 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
   const locks = new Map();
   const jobs = new Set();
   const aiJobs = new Set();
+  const conversations = new Map();
   let origin;
   const projectDir = id => path.join(dataDir, uid(id));
   async function load(id) {
@@ -68,7 +81,7 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
     await fs.mkdir(dir, { recursive: true });
     const tmp = path.join(dir, `project-${randomUUID()}.tmp`);
     await fs.writeFile(tmp, JSON.stringify(project, null, 2), 'utf8');
-    await fs.rename(tmp, path.join(dir, 'project.json'));
+    await replaceLocalFile(tmp, path.join(dir, 'project.json'));
   }
   async function locked(id, action) {
     const previous = locks.get(id) || Promise.resolve();
@@ -151,6 +164,141 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
     if (next.assets.some(asset => !assetIds.has(asset.id))) throw error(400, '内容流程引用了未上传到当前项目的资料');
     return next;
   }
+  const conversationPath = (id,requestId) => path.join(projectDir(id),'conversation-jobs',`${uid(requestId)}.json`);
+  function conversationFor(project) {
+    return project.conversation ?? {messages:(project.ai?.messages ?? []).filter(item => ['user','assistant'].includes(item.role) && typeof (item.content ?? item.text) === 'string').map(item => ({id:randomUUID(),role:item.role,content:item.content ?? item.text,at:item.at || project.updatedAt,legacy:true}))};
+  }
+  async function saveConversationJob(id,job) {
+    const filename = conversationPath(id,job.requestId);
+    await fs.mkdir(path.dirname(filename),{recursive:true});
+    const temporary = `${filename}.${randomUUID()}.tmp`;
+    await fs.writeFile(temporary,JSON.stringify(job,null,2),'utf8');
+    await replaceLocalFile(temporary,filename);
+  }
+  async function readConversationJob(id,requestId) {
+    try {
+      let job = JSON.parse(await fs.readFile(conversationPath(id,requestId),'utf8'));
+      if (job.status === 'running' && !conversations.has(`${id}:${requestId}`)) {
+        // The first read may have raced the final atomic rename and task cleanup.
+        job = JSON.parse(await fs.readFile(conversationPath(id,requestId),'utf8'));
+        if (job.status !== 'running' || conversations.has(`${id}:${requestId}`)) return job;
+        job.status = 'failed'; job.error = '上次任务因本机服务中断而停止，已完成的阶段保留。为避免重复扣费，没有自动重试。';
+        job.reply = job.error; job.interruptedPhase = job.phase; job.phase = 'failed';
+        const current = await load(id);
+        current.conversation = conversationFor(current);
+        if (current.conversation.activeRequestId === requestId) current.conversation.activeRequestId = null;
+        if (!current.conversation.messages.some(item => item.role === 'assistant' && item.requestId === requestId)) current.conversation.messages.push({id:randomUUID(),role:'assistant',content:job.reply,at:new Date().toISOString(),requestId,status:'failed'});
+        await save(current);
+        await saveConversationJob(id,job);
+      }
+      return job;
+    } catch (e) { if (e.code === 'ENOENT') return null; throw e; }
+  }
+  async function publicConversation(id,job) {
+    const project = await load(id);
+    return {requestId:job.requestId,status:job.status,phase:job.phase,project,reply:job.reply || '',
+      files:project.exports?.revision === project.revision ? project.exports.files : [],warnings:job.warnings || [],
+      ...(job.error ? {error:job.error} : {}),completedSteps:job.completedSteps || []};
+  }
+  async function savePaidResult(id,requestId,action,result,snapshot) {
+    const directory = path.join(projectDir(id),'conversation-results');
+    await fs.mkdir(directory,{recursive:true});
+    await fs.writeFile(path.join(directory,`${requestId}-${action}.json`),JSON.stringify({basedOnRevision:snapshot.revision,action,result},null,2),'utf8');
+  }
+  async function applyConversationResult(id,snapshot,result,action,slideId,nextAction) {
+    return locked(id,async () => {
+      const p = await load(id);
+      if (p.revision !== snapshot.revision) throw error(409,'处理期间项目有新修改。模型结果已保留在本机，未覆盖你的修改。');
+      if (!result || !result.ai || typeof result.ai !== 'object' || Array.isArray(result.ai)) throw error(502,'模型未返回有效分析，已有内容已保留。');
+      const slides = result.slides === undefined ? undefined : validateSlides(result.slides,p);
+      if (['analyze','chat'].includes(action) && slides !== undefined) throw error(502,'分析不能直接替换页面。');
+      if (['plan','revise'].includes(action) && !slides?.length) throw error(502,'模型未返回可用页面。');
+      const previousSlides = action === 'revise' ? validateSlides(p.slides,p) : null;
+      if (action === 'revise' && (slides.length !== previousSlides.length || slides.some((slide,index) => slide.id !== previousSlides[index].id || (slide.id !== slideId && JSON.stringify(slide) !== JSON.stringify(previousSlides[index]))))) throw error(502,'改稿触及其他页面，旧稿已保留。');
+      const previousAi = p.ai, previousExports = p.exports;
+      const requirementsChanged = nextAction?.changesRequirements === true && nextAction.action !== 'revise';
+      p.ai = {...result.ai,analysisStale:false,
+        planStale:action === 'plan' ? false : !!previousAi?.planStale || (requirementsChanged && hasAiSlides(p)),
+        pagesMode:['plan','revise'].includes(action) ? 'model' : previousAi?.pagesMode || (hasAiSlides(p) ? 'model' : 'rules')};
+      if (slides) p.slides = action === 'revise' ? p.slides.map(slide => slide.id === slideId ? slides.find(next => next.id === slideId) : slide) : slides;
+      invalidate(p);
+      // A question changes conversation history, not the already-rendered page content.
+      if (!slides && !requirementsChanged && !previousAi?.analysisStale && previousExports) p.exports = {...previousExports,revision:p.revision};
+      await save(p); return structuredClone(p);
+    });
+  }
+  async function exportConversation(id,snapshot,formats) {
+    return locked(id,async () => {
+      const p = await load(id);
+      if (p.revision !== snapshot.revision) throw error(409,'制作前项目已有新修改，已保存页面没有被覆盖。');
+      if (!p.slides.length) throw error(422,'当前还没有页面。请先告诉我希望制作什么内容。');
+      if (hasAiSlides(p) && (p.ai?.planStale || p.ai?.analysisStale)) throw error(422,'当前页面仍待按新要求更新。请发送“按当前要求重新制作”。');
+      const runId = randomUUID(), outputDir = path.join(projectDir(id),'exports',runId);
+      await fs.mkdir(outputDir,{recursive:true}); jobs.add(id);
+      try {
+        const result = await renderProject({project:p,projectDir:projectDir(id),outputDir,formats});
+        const fileUrl = name => `/api/projects/${id}/exports/${name.split('/').map(encodeURIComponent).join('/')}`;
+        const files = await Promise.all(result.files.map(async file => {await safeFile(outputDir,file.name);return {...file,url:fileUrl(file.name)};}));
+        const slides = await Promise.all((result.slides || []).map(async slide => {await safeFile(outputDir,slide.preview);return {...slide,url:fileUrl(slide.preview)};}));
+        p.exports = {runId,revision:p.revision,files,slides,warnings:result.warnings || []}; await save(p);
+        return structuredClone(p);
+      } finally {jobs.delete(id);}
+    });
+  }
+  async function runConversation(id,job,initial) {
+    let project = initial, reply = '', phase = 'understanding';
+    const progress = async value => {phase = value;job.phase = value;await saveConversationJob(id,job);};
+    const step = async (action,slideId) => {
+      const result = await aiRunner({project:structuredClone(project),projectDir:projectDir(id),action,message:job.message,slideId,gateway:aiGateway});
+      // Preserve a completed paid response before attempting to update the project.
+      await savePaidResult(id,job.requestId,action,result,project);
+      project = await applyConversationResult(id,project,result,action,slideId,result.nextAction);
+      job.completedSteps.push(action); job.warnings = [...new Set([...(job.warnings || []),...(result.ai?.warnings || [])])];
+      reply = typeof result.reply === 'string' ? result.reply : result.ai?.messages?.filter(item => item.role === 'assistant').at(-1)?.content || '已理解这次要求。';
+      await saveConversationJob(id,job); return result;
+    };
+    try {
+      let intent;
+      const exportOnly = /^(?:请)?(?:继续|重新|再次|只)?导出(?:当前|已有)?(?:文件|页面|PPT|PPTX|网页|图片|结果)?[。！!]?$/i.test(job.message.trim());
+      if (exportOnly && project.slides.length && !project.ai?.analysisStale && !project.ai?.planStale) {
+        intent = {action:'export',formats:/PPT/i.test(job.message) ? ['pptx'] : /网页/.test(job.message) ? ['web'] : /图片/.test(job.message) ? ['images'] : ['pptx','web','images']};
+      } else {
+        const result = await step(project.ai?.analysis && !project.ai?.analysisStale ? 'chat' : 'analyze');
+        intent = resolveConversationAction(result.nextAction,job.message,project.slides);
+        if (intent.reason) reply = intent.reason;
+      }
+      if (intent.action === 'produce') {
+        await progress('planning'); await step('plan');
+      } else if (intent.action === 'revise') {
+        if (project.ai?.planStale) throw error(422,'整套内容有待更新的要求。请先说“按当前要求重新制作”，或明确保留当前内容后再改某页。');
+        await progress('revising'); await step('revise',intent.slideId);
+      }
+      if (['produce','revise','export'].includes(intent.action)) {
+        await progress('exporting'); project = await exportConversation(id,project,intent.formats);
+        job.completedSteps.push('export');
+        const label = intent.action === 'revise' ? '已修改指定页面，其余页面保持不变。' : intent.action === 'export' ? '已按当前页面导出。' : `已生成 ${project.slides.length} 页试稿。`;
+        reply = `${label}\n${reply && intent.action !== 'export' ? reply+'\n' : ''}文件在下方，可以直接查看或下载；继续告诉我需要怎样调整。`;
+        job.warnings = [...new Set([...(job.warnings || []),...(project.exports?.warnings || [])])];
+      }
+      job.status = 'completed'; job.phase = 'completed'; job.reply = reply;
+    } catch (e) {
+      job.status = 'failed'; job.phase = 'failed'; job.failedPhase = phase;
+      job.error = e.status === 409 ? '处理期间项目有新修改，结果已保留在本机，没有覆盖新版本。'
+        : phase === 'exporting' ? '文件导出未完成，已生成的页面仍然保留。发送“重新导出”即可只重做文件，不重复调用模型。'
+        : e.status === 422 && typeof e.message === 'string' && ['整套内容','当前页面'].some(prefix => e.message.startsWith(prefix)) ? e.message
+        : '这次模型处理未完成，已完成的阶段和原资料仍然保留。没有自动重试或重复提交。';
+      job.reply = job.error;
+    }
+    try {
+      await locked(id,async () => {
+        const current = await load(id);
+        current.conversation = conversationFor(current);
+        if (!current.conversation.messages.some(item => item.role === 'assistant' && item.requestId === job.requestId)) current.conversation.messages.push({id:randomUUID(),role:'assistant',content:job.reply,at:new Date().toISOString(),requestId:job.requestId,status:job.status});
+        current.conversation.activeRequestId = null; await save(current);
+      });
+      await saveConversationJob(id,job);
+    } finally {aiJobs.delete(id);conversations.delete(`${id}:${job.requestId}`);}
+  }
   const server = http.createServer(async (req, res) => {
     const json = (status, value) => { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }); res.end(JSON.stringify(value)); };
     async function sendFile(file, { download = false, name } = {}) {
@@ -197,6 +345,13 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
         const id = uid(parts[2]);
         if (req.method === 'GET') {
           const p = await load(id);
+          if (parts.length === 5 && parts[3] === 'conversation') {
+            return await locked(id,async () => {
+              const job = await readConversationJob(id,uid(parts[4]));
+              if (!job) throw error(404,'这次对话任务不存在');
+              return json(200,await publicConversation(id,job));
+            });
+          }
           if (parts.length === 3) return json(200,p);
           if (parts.length === 4 && parts[3] === 'workflow') return json(200,workflowResult(p));
           if (parts[3] === 'assets' && parts.length === 5) {
@@ -217,6 +372,39 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
           throw error(404,'入口不存在');
         }
         const body = await jsonBody(req);
+        if (parts.length === 4 && parts[3] === 'conversation' && req.method === 'POST') {
+          if (!body || typeof body !== 'object' || Array.isArray(body)) throw error(400,'对话需要 JSON 对象');
+          const requestId = uid(body.requestId), message = str(body.message,8000);
+          if (!Array.isArray(body.assetIds ?? []) || (body.assetIds ?? []).length > 40 || (body.assetIds ?? []).some(assetId => typeof assetId !== 'string' || !ID.test(assetId))) throw error(400,'附件列表无效');
+          const assetIds = [...new Set(body.assetIds ?? [])];
+          if (!message && !assetIds.length) throw error(400,'请先打字或上传资料');
+          const effectiveMessage = message || '请先查看这些资料，和我讨论怎样表达；暂不制作文件。';
+          const fingerprint = createHash('sha256').update(JSON.stringify({message:effectiveMessage,assetIds})).digest('hex');
+          const started = await locked(id,async () => {
+            const previous = await readConversationJob(id,requestId);
+            if (previous) {
+              if (previous.fingerprint !== fingerprint) throw error(409,'同一个对话编号不能用于不同内容');
+              return {job:previous,duplicate:true};
+            }
+            if (jobs.has(id) || aiJobs.has(id)) throw error(409,'这段对话仍在处理，请等待当前回复');
+            const p = await load(id); checkRevision(p,{expectedRevision:body.revision});
+            if (assetIds.some(assetId => !p.assets.some(asset => asset.id === assetId))) throw error(400,'附件不属于当前对话');
+            const job = {requestId,fingerprint,message:effectiveMessage,assetIds,status:'running',phase:'understanding',createdAt:new Date().toISOString(),completedSteps:[],warnings:[]};
+            aiJobs.add(id);conversations.set(`${id}:${requestId}`,job);
+            try {
+              await saveConversationJob(id,job);
+              p.conversation = conversationFor(p);
+              p.conversation.messages.push({id:randomUUID(),role:'user',content:message,at:job.createdAt,assetIds,requestId});
+              p.conversation.activeRequestId = requestId;
+              await save(p); return {job,snapshot:structuredClone(p)};
+            } catch (e) {aiJobs.delete(id);conversations.delete(`${id}:${requestId}`);throw e;}
+          });
+          if (!started.duplicate) {
+            // The durable receipt exists before the first paid step; disconnects never resubmit it.
+            void runConversation(id,started.job,started.snapshot).catch(() => {aiJobs.delete(id);conversations.delete(`${id}:${requestId}`);});
+          }
+          return json(started.job.status === 'running' ? 202 : 200,await publicConversation(id,started.job));
+        }
         if (jobs.has(id)) throw error(409,'正在导出当前版本，完成后再修改');
         if (parts.length === 4 && parts[3] === 'ai' && req.method === 'POST') {
           if (!body || typeof body !== 'object' || Array.isArray(body)) throw error(400,'模型请求需要 JSON 对象');
@@ -309,16 +497,25 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
             invalidate(p); await save(p); return json(200,p);
           }
           if (parts.length === 4 && parts[3] === 'assets' && req.method === 'POST') {
-            checkRevision(p,body,false);
-            if (p.assets.length >= 40) throw error(400,'本轮最多 40 份资料，请分项目制作');
             if (typeof body.base64 !== 'string' || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(body.base64)) throw error(400,'文件编码无效');
             const buffer = Buffer.from(body.base64,'base64');
             if (!buffer.length || buffer.length > 64*1024*1024) throw error(413,'文件需要为 1 字节至 64 MB');
             if (!ROLES.has(body.role || 'content')) throw error(400,'资料角色无效');
+            const clientUploadId = body.uploadId === undefined && body.clientUploadId === undefined ? undefined : uid(body.uploadId ?? body.clientUploadId);
+            const digest = createHash('sha256').update(buffer).digest('hex'), name = str(body.name,255);
+            const uploaded = clientUploadId && p.assets.find(asset => asset.clientUploadId === clientUploadId);
+            if (uploaded) {
+              if (uploaded.name !== name || uploaded.role !== (body.role || 'content') || uploaded.sha256 !== digest) throw error(409,'同一个上传编号不能用于不同资料');
+              return json(200,p);
+            }
+            checkRevision(p,body,false);
+            if (p.assets.length >= 40) throw error(400,'本轮最多 40 份资料，请分项目制作');
             const total = p.assets.reduce((s,a)=>s+(a.bytes||0),0);
             if (total + buffer.length > 512*1024*1024) throw error(413,'此项目已超过 512 MB，请拆分资料');
-            const a = await importAsset({projectDir:projectDir(id),name:str(body.name,255),buffer,role:body.role || 'content'});
+            const a = await importAsset({projectDir:projectDir(id),name,buffer,role:body.role || 'content'});
             a.bytes = buffer.length;
+            a.sha256 = digest;
+            if (clientUploadId) a.clientUploadId = clientUploadId;
             p.assets.push(a);
             markAiInputsStale(p);
             if (p.workflow) p.workflow = applyWorkflow(p, p.workflow, {type:'upsertAsset',value:workflowAsset(a)}, p.workflow.revision);

@@ -12,6 +12,16 @@ const analysis = () => ({ summary: '整理现有住宅方案，以空间证据�
 const slide = (title = '设计回应') => ({ kind: 'text', title, body: '从已知需求解释方案，未知信息保留待确认。', caption: '', assetIds: [], sourceIds: ['user:brief'], designReason: '以简短结论承接业主问题。' });
 const gateway = (payload, inspect = () => {}) => ({ complete: async args => { inspect(args); return { text: JSON.stringify(payload), model: 'test-model', provider: 'mock', taskId: 'test-task', usage: { total_tokens: 10 }, durationMs: 2 }; } });
 
+test('conversation returns a constrained model intent and exact existing page index, defaulting to reply',async () => {
+  const value = project();value.slides = [{id:'existing-page',...slide('已有页')}];
+  const output = await runAiAction({project:value,projectDir:'.',action:'chat',message:'修改第1页',gateway:gateway({analysis:analysis(),reply:'可以修改。',nextAction:{action:'revise',slideId:'existing-page',formats:['pptx','shell','web'],changesRequirements:false}},request => {
+    const context = JSON.parse(request.prompt);assert.deepEqual(context.existingPages,[{number:1,id:'existing-page',title:'已有页'}]);assert.match(context.conversationPolicy,/只是交流/);
+  })});
+  assert.deepEqual(output.nextAction,{action:'revise',slideId:'existing-page',formats:['pptx','web'],changesRequirements:false});
+  const fallback = await runAiAction({project:value,projectDir:'.',action:'chat',message:'只讨论',gateway:gateway({analysis:analysis(),reply:'先讨论。',nextAction:{action:'execute-code'}})});
+  assert.deepEqual(fallback.nextAction,{action:'reply',changesRequirements:false});
+});
+
 test('analysis loads real skill content, preserves source uncertainty and never changes existing project', async () => {
   const value = project(); const before = structuredClone(value); let calls = 0;
   const result = await runAiAction({ project: value, projectDir: '.', action: 'analyze', gateway: gateway({ analysis: analysis(), reply: '已整理资料，地点需要核对。' }, request => {
