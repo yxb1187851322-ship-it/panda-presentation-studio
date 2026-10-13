@@ -1,16 +1,19 @@
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { runAiAction, AI_LIMITS } from '../src/ai/pipeline.mjs';
+import { runAiAction as executeAiAction, AI_LIMITS } from '../src/ai/pipeline.mjs';
 import { loadRuntimePackage } from '../src/renderers/assets.mjs';
 
 const project = () => ({ id: 'test-project', title: '住宅汇报', brief: '给业主解释现有方案；地点用户说泰州，资料写台州，尚需确认。', audience: '业主', revision: 1, brand: {}, assets: [], slides: [] });
 const analysis = () => ({ summary: '整理现有住宅方案，以空间证据说明设计。', goal: '帮助业主理解方案', audience: '业主', preferences: ['图片清楚、文字克制'], observations: [], facts: [{ text: '用户希望给业主看。', sourceIds: ['user:brief'] }], designReasoning: [{ need: '理解设计回应', response: '先陈述需求，再用图像说明。', evidenceIds: ['user:brief'], status: 'interpretation' }], questions: ['项目地点以台州还是泰州为准？'], warnings: ['房间身份仍须结合原稿确认。'] });
 const slide = (title = '设计回应') => ({ kind: 'text', title, body: '从已知需求解释方案，未知信息保留待确认。', caption: '', assetIds: [], sourceIds: ['user:brief'], designReason: '以简短结论承接业主问题。' });
 const gateway = (payload, inspect = () => {}) => ({ complete: async args => { inspect(args); return { text: JSON.stringify(payload), model: 'test-model', provider: 'mock', taskId: 'test-task', usage: { total_tokens: 10 }, durationMs: 2 }; } });
+const privateProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'panda-ai-pipeline-'));
+after(async () => { await fs.rm(privateProjectDir, { recursive: true, force: true }); });
+const runAiAction = args => executeAiAction({ ...args, projectDir: args.projectDir === '.' ? privateProjectDir : args.projectDir });
 
 test('conversation returns a constrained model intent and exact existing page index, defaulting to reply',async () => {
   const value = project();value.slides = [{id:'existing-page',...slide('已有页')}];
@@ -199,4 +202,69 @@ test('paid response remains usable and local gateway receipt warnings are visibl
   assert.equal(calls, 1); assert.equal(result.ai.status, 'analysis-ready'); assert.deepEqual(result.ai.analysis.facts, analysis().facts);
   assert.ok(result.ai.warnings.includes(warning)); assert.equal(result.ai.runs[0].gatewayWarnings[0], warning);
   assert.equal(result.ai.runs[0].gatewayWarnings.length, 2); assert.equal(result.ai.runs[0].gatewayWarnings[1].length, 1000);
+});
+
+test('one complete contract envelope works across stages without skipping source or target checks', async () => {
+  const value = project(); let calls = 0;
+  const wrappedAnalysis = { contract: { analysis: analysis(), reply: '已理解，请继续。', nextAction: { action: 'produce', formats: ['pptx'] } } };
+  const rawAnalysis = '```json\n' + JSON.stringify(wrappedAnalysis) + '\n```';
+  const first = await runAiAction({ project: value, projectDir: '.', action: 'analyze', gateway: { complete: async request => ({ ...(await gateway(wrappedAnalysis, () => calls++).complete(request)), text: rawAnalysis }) } });
+  assert.deepEqual(first.ai.analysis.facts, analysis().facts); assert.equal(first.nextAction.action, 'produce');
+  const receipt = JSON.parse(await fs.readFile(path.join(privateProjectDir, first.ai.runs[0].rawResponseFile), 'utf8'));
+  assert.equal(receipt.text, rawAnalysis); assert.equal(receipt.status, 'unvalidated-model-output');
+  value.ai = first.ai;
+  const plan = await runAiAction({ project: value, projectDir: '.', action: 'plan', gateway: gateway({ contract: { slides: [slide()], reply: '已规划。', warnings: [] } }, () => calls++) });
+  value.slides = plan.slides;
+  const revised = await runAiAction({ project: value, projectDir: '.', action: 'revise', slideId: 'slide-001', message: '缩短标题', gateway: gateway({ contract: { slide: { ...slide('尺度'), id: 'slide-001' }, reply: '已缩短。', warnings: [] } }, () => calls++) });
+  assert.equal(revised.slides[0].title, '尺度'); assert.equal(calls, 3);
+  const invalid = analysis(); invalid.facts = [{ text: '无依据面积。', sourceIds: ['asset:missing'] }];
+  await assert.rejects(runAiAction({ project: value, projectDir: '.', action: 'analyze', gateway: gateway({ contract: { analysis: invalid, reply: '不能采用。' } }, () => calls++) }), { code: 'AI_SOURCE_INVALID' });
+  await assert.rejects(runAiAction({ project: value, projectDir: '.', action: 'revise', slideId: 'slide-001', message: '修改标题', gateway: gateway({ contract: { slide: { ...slide(), id: 'wrong-page' }, reply: '不能采用。' } }, () => calls++) }), { code: 'AI_REVISION_TARGET_INVALID' });
+  assert.equal(calls, 5);
+});
+
+test('ambiguous, nested, partial, and non-contract envelopes are not guessed or recursively unwrapped', async () => {
+  const content = { analysis: analysis(), reply: '回复。' };
+  for (const payload of [
+    { contract: content, reply: '外层冲突回复。' },
+    { contract: { contract: content } },
+    { contract: [content] },
+    { contract: { analysis: analysis() } },
+    { result: content },
+  ]) {
+    let calls = 0;
+    await assert.rejects(runAiAction({ project: project(), projectDir: '.', action: 'analyze', gateway: gateway(payload, () => calls++) }), { code: 'AI_OUTPUT_INVALID' });
+    assert.equal(calls, 1);
+  }
+});
+
+test('invalid paid body is archived before rejection, redacts key-shaped text, and never overwrites prior receipts', async () => {
+  const value = project(); const original = structuredClone(value); let calls = 0;
+  const text = 'not-json: sk-this-is-a-fake-long-key-for-tests';
+  const mock = { complete: async () => { calls++; return { text, taskId: 'same-paid-task', model: 'mock', provider: 'mock' }; } };
+  const receipts = [];
+  for (let i = 0; i < 2; i++) {
+    await assert.rejects(runAiAction({ project: value, projectDir: '.', action: 'analyze', gateway: mock }), error => {
+      assert.equal(error.code, 'AI_OUTPUT_INVALID'); assert.equal(error.taskId, 'same-paid-task');
+      assert.match(error.rawResponseFile, /^ai-runs\/raw\/[a-f0-9-]+\.json$/); receipts.push(error.rawResponseFile); return true;
+    });
+  }
+  // Repeated provider IDs never name or replace files.
+  for (const filename of receipts) {
+    const body = await fs.readFile(path.join(privateProjectDir, filename), 'utf8');
+    const receipt = JSON.parse(body);
+    assert.equal(receipt.taskId, 'same-paid-task'); assert.equal(receipt.text, 'not-json: [REDACTED]'); assert.doesNotMatch(body, /sk-this/);
+  }
+  assert.equal(receipts.length, 2); assert.notEqual(receipts[0], receipts[1]); assert.equal(calls, 2); assert.deepEqual(value, original);
+});
+
+test('raw archive failure warns but does not repeat a usable paid response', async () => {
+  const blocked = await fs.mkdtemp(path.join(os.tmpdir(), 'panda-ai-archive-blocked-'));
+  try {
+    await fs.writeFile(path.join(blocked, 'ai-runs'), 'existing-file'); let calls = 0;
+    const output = await runAiAction({ project: project(), projectDir: blocked, action: 'analyze', gateway: gateway({ analysis: analysis(), reply: '保留已付费回复。' }, () => calls++) });
+    assert.equal(calls, 1); assert.equal(output.ai.runs[0].rawResponseFile, undefined);
+    assert.ok(output.ai.warnings.some(warning => warning.includes('原始回执保存失败')));
+    assert.equal(await fs.readFile(path.join(blocked, 'ai-runs'), 'utf8'), 'existing-file');
+  } finally { await fs.rm(blocked, { recursive: true, force: true }); }
 });

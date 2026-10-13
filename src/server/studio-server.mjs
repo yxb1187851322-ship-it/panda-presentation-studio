@@ -553,7 +553,7 @@ export async function createStudio({ dataDir = path.join(repoRoot, 'data'), port
           throw error(404,'入口不存在');
         });
       }
-      if (req.method === 'GET' && ['/','/index.html','/styles.css','/app.js'].includes(url.pathname)) {
+      if (req.method === 'GET' && ['/','/index.html','/styles.css','/app.js','/assets/panda-logo-light.png'].includes(url.pathname)) {
         return sendFile(await safeFile(path.join(repoRoot,'studio'),url.pathname==='/'?'index.html':url.pathname.slice(1)));
       }
       throw error(404,'入口不存在');

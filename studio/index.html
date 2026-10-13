@@ -2,12 +2,12 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="color-scheme" content="light"><title>Panda · 对话创作</title>
+<meta name="color-scheme" content="light"><meta name="theme-color" content="#ffffff"><title>Panda · 对话创作</title>
 <link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script>
 </head>
 <body class="empty">
 <header class="topbar">
-<a class="wordmark" href="/" aria-label="Panda 首页">PANDA<span class="brand-dot"></span></a>
+<a class="wordmark" href="/" aria-label="Panda 首页"><img src="/assets/panda-logo-light.png" width="80" height="60" alt="Panda AI"></a>
 <span id="conversation-title" class="conversation-title"></span>
 <div class="header-actions">
 <button id="history-button" class="icon-button" type="button" aria-label="历史对话" title="历史对话"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.3 7M3 4v7h7M12 7v5l3 2"/></svg></button>
@@ -15,8 +15,8 @@
 </div></header>
 <main id="chat-scroll">
 <section id="welcome" class="welcome">
-<div class="panda-mark" aria-hidden="true"><span></span><span></span><i></i></div>
-<p class="eyebrow">PANDA STUDIO</p><h1>把想法，说给 Panda。</h1>
+<img class="panda-mark" src="/assets/panda-logo-light.png" width="104" height="78" alt="Panda AI">
+<h1>把想法，说给 Panda。</h1>
 <p class="welcome-copy">放入图片和资料，说说你想呈现什么。</p>
 </section>
 <section id="messages" class="messages" aria-label="对话记录" aria-live="polite" aria-relevant="additions"></section>

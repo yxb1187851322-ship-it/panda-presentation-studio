@@ -50,3 +50,15 @@ test('user-supplied asset paths cannot replace server-owned files',async t=>{
   assert.equal(result.assets[0].role,'plan');
   assert.equal((await fetch(app.origin+base+'/assets/asset-1')).status,200);
 });
+
+test('brand image is served through an exact static allowlist',async t=>{
+  const {app}=await harness(t);
+  const logo=await fetch(app.origin+'/assets/panda-logo-light.png');
+  assert.equal(logo.status,200);
+  assert.equal(logo.headers.get('content-type'),'image/png');
+  const bytes=Buffer.from(await logo.arrayBuffer());
+  assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  assert.equal((await fetch(app.origin+'/assets/other.png')).status,404);
+  assert.equal((await fetch(app.origin+'/assets/../app.js')).status,200);
+  assert.equal((await fetch(app.origin+'/assets/../local/ai-config.json')).status,404);
+});
